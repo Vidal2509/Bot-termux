@@ -1,5 +1,3 @@
-
-
 import { Sticker } from 'easy-whatsapp-sticker'
 import { downloadContentFromMessage } from '@whiskeysockets/baileys'
 import Jimp from 'jimp'
@@ -47,17 +45,14 @@ let handler = async (m, { conn, args }) => {
             }, maxW, 100)
         }
 
-        const finalBuffer = await foto.getBufferAsync(Jimp.MIME_PNG)
+       const finalBuffer = await foto.getBufferAsync(Jimp.MIME_PNG)
 
-const stickerGenerado = new Sticker(finalBuffer, {
-    pack: 'Bot de Vidal', 
-    author: '@Vidal',
-    type: 'full'
-})
-
-const resultSticker = await stickerGenerado.toBuffer()
-await conn.sendMessage(m.chat, { sticker: resultSticker }, { quoted: m })
-
+// Enviamos el sticker usando la función nativa que no requiere Sharp
+await conn.sendMessage(m.chat, { 
+    sticker: finalBuffer, 
+    packname: 'Bot de Vidal', 
+    author: '@Vidal' 
+}, { quoted: m })
     } catch (e) {
         console.error(e)
     }
