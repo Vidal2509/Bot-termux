@@ -49,10 +49,10 @@ let handler = async (m, { conn, text, args }) => {
         const seleccionada = nuevas[Math.floor(Math.random() * nuevas.length)]
         historial.add(seleccionada)
 
-        await conn.sendMessage(m.chat, {
-            image: { url: seleccionada },
-            caption: `📍 *Pinterest:* ${q}`
-        }, { quoted: m })
+        await conn.sendMessage(m.chat, { 
+    image: { url: result }, 
+    caption: 'Aquí tienes tu imagen de Pinterest' 
+}, { quoted: m })
 
     } catch (e) {
         console.error(e)
