@@ -1,4 +1,3 @@
-import { Sticker } from 'easy-whatsapp-sticker'
 import { downloadContentFromMessage } from '@whiskeysockets/baileys'
 import Jimp from 'jimp'
 
