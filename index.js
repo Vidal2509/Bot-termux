@@ -6,6 +6,7 @@ import { join } from 'path';
 import { readdirSync } from 'fs';
 import './config.js';
 
+
 async function iniciarBot() {
     const { state, saveCreds } = await useMultiFileAuthState('MysticSession');
     const { version } = await fetchLatestBaileysVersion();
@@ -89,6 +90,22 @@ async function iniciarBot() {
         } catch (e) {
             console.error('❌ Error en eventos de grupo:', e);
         }
+        if (text.startsWith("!pin ")) {
+    const query = text.slice(5);
+
+    if (!query) return m.reply("Escribe algo para buscar 😾");
+
+    m.reply("🔎 Buscando en Pinterest...");
+
+    const imagen = await buscarPinterest(query);
+
+    if (!imagen) return m.reply("❌ No encontré nada.");
+
+    await conn.sendMessage(m.chat, {
+        image: { url: imagen },
+        caption: `📌 Resultado para: ${query}`
+    });
+}
     });
 }
 
