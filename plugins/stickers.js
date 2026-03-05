@@ -12,49 +12,51 @@ const handler = async (m, { conn, text }) => {
     if (!buffer) return conn.sendMessage(m.chat, { text: '📸 Responde a una imagen' }, { quoted: m })
 
     const foto = await Jimp.read(buffer)
-    
-    // 1. SOLUCIÓN AL RECORTE: Usamos contain para que la imagen quepa completa
-    // Agrega franjas transparentes a los lados o arriba según sea necesario
+    // Mantiene la imagen completa sin recortes feos
     foto.contain(512, 512, Jimp.HORIZONTAL_ALIGN_CENTER | Jimp.VERTICAL_ALIGN_MIDDLE)
 
     if (text) {
-      // Usamos una fuente un poco más pequeña (32) para que quepa más texto
-      const fontWhite = await Jimp.loadFont(Jimp.FONT_SANS_32_WHITE)
-      const fontBlack = await Jimp.loadFont(Jimp.FONT_SANS_32_BLACK)
-      
-      // 2. SOLUCIÓN AL TEXTO: Definimos un ancho máximo (480px) para que haga salto de línea
-      const maxWidth = 480
-      const x = 16 
-      const y = 350 // Ajusta este valor si quieres el texto más arriba o abajo
+      // Cargamos fuente 64 (Siempre Grande)
+      const fontWhite = await Jimp.loadFont(Jimp.FONT_SANS_64_WHITE)
+      const fontBlack = await Jimp.loadFont(Jimp.FONT_SANS_64_BLACK)
 
-      // Dibujar contorno negro para legibilidad
-      for (let i = -1; i <= 1; i++) {
-        for (let j = -1; j <= 1; j++) {
-          foto.print(fontBlack, x + i, y + j, {
+      const maxWidth = 460
+      const x = 26
+      
+      // Calculamos cuánto mide el bloque de texto en total
+      const textHeight = Jimp.measureTextHeight(fontWhite, text, maxWidth)
+      
+      // Posición dinámica: El texto se apoya en el fondo (490) y crece hacia arriba
+      let yPos = 490 - textHeight
+
+      // Evitamos que el texto se salga por arriba si es demasiado largo
+      if (yPos < 10) yPos = 10
+
+      // Dibujar contorno negro (Grosor 2 para fuente 64)
+      for (let i = -2; i <= 2; i++) {
+        for (let j = -2; j <= 2; j++) {
+          foto.print(fontBlack, x + i, yPos + j, {
             text: text,
-            alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
-            alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE
+            alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER
           }, maxWidth)
         }
       }
-      // Dibujar texto blanco central
-      foto.print(fontWhite, x, y, {
+      
+      // Dibujar texto blanco principal
+      foto.print(fontWhite, x, yPos, {
         text: text,
-        alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
-        alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE
+        alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER
       }, maxWidth)
     }
 
     const tempPNG = `./${Date.now()}.png`
     const tempWebP = `./${Date.now()}.webp`
-    
     await foto.writeAsync(tempPNG)
 
-    // Conversión limpia con FFmpeg
+    // Conversión optimizada
     await execPromise(`ffmpeg -i ${tempPNG} -vcodec libwebp -lossless 1 -loop 0 -preset default -an -vsync 0 -s 512:512 ${tempWebP}`)
 
     const stickerBuffer = fs.readFileSync(tempWebP)
-
     await conn.sendMessage(m.chat, { sticker: stickerBuffer }, { quoted: m })
 
     if (fs.existsSync(tempPNG)) fs.unlinkSync(tempPNG)
@@ -62,7 +64,7 @@ const handler = async (m, { conn, text }) => {
 
   } catch (e) {
     console.error(e)
-    conn.sendMessage(m.chat, { text: '❌ Hubo un fallo.' }, { quoted: m })
+    conn.sendMessage(m.chat, { text: '❌ Hubo un fallo al crear el sticker.' }, { quoted: m })
   }
 }
 
