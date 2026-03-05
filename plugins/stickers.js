@@ -1,54 +1,41 @@
-import { Sticker, StickerTypes } from 'wa-sticker-formatter'
 import Jimp from 'jimp'
+import pkg from 'ws-sticker-maker'
+const { Sticker } = pkg
 
 const handler = async (m, { conn, text }) => {
   try {
-    const buffer = await m.download();
-    if (!buffer) return conn.sendMessage(m.chat, { text: '📸 Responde a una imagen con *.s*' }, { quoted: m });
+    const buffer = await m.download()
+    if (!buffer) return conn.sendMessage(m.chat, { text: '📸 Responde a una imagen con *.s*' }, { quoted: m })
 
-    const foto = await Jimp.read(buffer);
-    foto.cover(512, 512);
+    const foto = await Jimp.read(buffer)
+    foto.cover(512, 512)
 
     if (text) {
-      // Cargamos fuente blanca y negra
-      const fontWhite = await Jimp.loadFont(Jimp.FONT_SANS_64_WHITE);
-      const fontBlack = await Jimp.loadFont(Jimp.FONT_SANS_64_BLACK);
-      
-      const yPosition = 400; // Posición inferior
-      const containerWidth = 512;
-      const texto = text.trim();
+      const fontWhite = await Jimp.loadFont(Jimp.FONT_SANS_64_WHITE)
+      const fontBlack = await Jimp.loadFont(Jimp.FONT_SANS_64_BLACK)
+      const y = 380
 
-      // DIBUJAR CONTORNO NEGRO (Desplazamos el texto negro 2px en cada dirección)
-      for (let x = -2; x <= 2; x++) {
-        for (let y = -2; y <= 2; y++) {
-          foto.print(fontBlack, x, yPosition + y, {
-            text: texto,
-            alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER
-          }, containerWidth);
+      for (let i = -2; i <= 2; i += 2) {
+        for (let j = -2; j <= 2; j += 2) {
+          foto.print(fontBlack, i, y + j, { text: text, alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER }, 512)
         }
       }
-
-      // DIBUJAR TEXTO BLANCO (Encima de lo negro)
-      foto.print(fontWhite, 0, yPosition, {
-        text: texto,
-        alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER
-      }, containerWidth);
+      foto.print(fontWhite, 0, y, { text: text, alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER }, 512)
     }
 
-    const pngBuffer = await foto.getBufferAsync(Jimp.MIME_PNG);
-    const stiker = new Sticker(pngBuffer, {
-      pack: 'Bot de Vidal',
-      author: '@Vidal',
-      type: StickerTypes.FULL,
-      quality: 75
-    });
+    const pngBuffer = await foto.getBufferAsync(Jimp.MIME_PNG)
 
-    const stickerBuffer = await stiker.toBuffer();
-    await conn.sendMessage(m.chat, { sticker: stickerBuffer }, { quoted: m });
+    // Crear el sticker con la nueva importación
+    const stiker = new Sticker(pngBuffer)
+      .setPack('Bot de Vidal')
+      .setAuthor('@Vidal')
+      .setType('full')
+
+    const result = await stiker.build()
+    await conn.sendMessage(m.chat, { sticker: result }, { quoted: m })
 
   } catch (e) {
-    console.error(e);
-    await conn.sendMessage(m.chat, { text: '❌ Error al procesar el sticker.' }, { quoted: m });
+    console.error('ERROR EN STICKER:', e)
   }
 }
 
