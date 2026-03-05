@@ -1,11 +1,10 @@
-import { makeWASocket, useMultiFileAuthState, fetchLatestBaileysVersion, DisconnectReason } from '@whiskeysockets/baileys';
+import { makeWASocket, useMultiFileAuthState, fetchLatestBaileysVersion, DisconnectReason, downloadContentFromMessage } from '@whiskeysockets/baileys';
 import { Boom } from '@hapi/boom';
 import pino from 'pino';
 import qrcode from 'qrcode-terminal';
 import { join } from 'path';
 import { readdirSync } from 'fs';
 import './config.js';
-
 
 async function iniciarBot() {
     const { state, saveCreds } = await useMultiFileAuthState('MysticSession');
@@ -18,7 +17,6 @@ async function iniciarBot() {
         browser: ['Windows', 'Chrome', '1.1.0']
     });
 
-    // --- ACTUALIZACIÓN DE CONEXIÓN ---
     conn.ev.on('connection.update', (update) => {
         const { connection, lastDisconnect, qr } = update;
         if (qr) {
@@ -35,7 +33,6 @@ async function iniciarBot() {
 
     conn.ev.on('creds.update', saveCreds);
 
-    // --- LECTOR DE PLUGINS ---
     const pluginsDir = join(process.cwd(), 'plugins');
     const pluginFiles = readdirSync(pluginsDir).filter(file => file.endsWith('.js'));
 
@@ -44,12 +41,27 @@ async function iniciarBot() {
         if (!m.message || m.key.fromMe) return;
 
         m.chat = m.key.remoteJid;
-        const texto = m.message.conversation || m.message.extendedTextMessage?.text || m.message.imageMessage?.caption || "";
         
+        // --- FUNCIÓN PARA DESCARGAR IMÁGENES (AGREGADA) ---
+        m.download = async () => {
+            const quoted = m.message.extendedTextMessage?.contextInfo?.quotedMessage;
+            const msg = quoted ? (quoted.imageMessage || null) : (m.message.imageMessage || null);
+            if (!msg) return null;
+            const stream = await downloadContentFromMessage(msg, 'image');
+            let buffer = Buffer.from([]);
+            for await (const chunk of stream) {
+                buffer = Buffer.concat([buffer, chunk]);
+            }
+            return buffer;
+        };
+
+        const texto = m.message.conversation || m.message.extendedTextMessage?.text || m.message.imageMessage?.caption || "";
         const prefix = '.';
         if (!texto.startsWith(prefix)) return;
 
+        const args = texto.trim().split(/ +/).slice(1);
         const commandName = texto.slice(prefix.length).trim().split(' ')[0].toLowerCase();
+        const text = args.join(' ');
 
         for (const file of pluginFiles) {
             try {
@@ -58,10 +70,8 @@ async function iniciarBot() {
                 const plugin = await import(`${pluginURL}?update=${Date.now()}`);
 
                 if (plugin.default.command.test(commandName)) {
-    // Definimos 'args' como el texto después del comando
-    const args = texto.split(' ').slice(1).join(' '); 
-    await plugin.default(m, { conn, texto, command: commandName, args }); // <--- Agregamos 'args'
-    console.log(`✅ Ejecutado: ${commandName}`);
+                    await plugin.default(m, { conn, texto, command: commandName, args, text });
+                    console.log(`✅ Ejecutado: ${commandName}`);
                 }
             } catch (e) {
                 console.error(`❌ Error en plugin ${file}:`, e);
@@ -69,16 +79,13 @@ async function iniciarBot() {
         }
     });
 
-    // --- BIENVENIDA Y DESPEDIDA (CORREGIDO) ---
     conn.ev.on('group-participants.update', async (anu) => {
         try {
             let metadata = await conn.groupMetadata(anu.id);
             let participantes = anu.participants;
-
             for (let num of participantes) {
                 let jid = typeof num === 'string' ? num : num.id;
                 let userTag = jid.split('@')[0];
-
                 if (anu.action == 'add') {
                     let saludo = `🌟 ¡Bienvenido/a @${userTag}!\n📍 Grupo: *${metadata.subject}*`;
                     await conn.sendMessage(anu.id, { text: saludo, mentions: [jid] });
@@ -87,25 +94,7 @@ async function iniciarBot() {
                     await conn.sendMessage(anu.id, { text: despedida, mentions: [jid] });
                 }
             }
-        } catch (e) {
-            console.error('❌ Error en eventos de grupo:', e);
-        }
-        if (text.startsWith("!pin ")) {
-    const query = text.slice(5);
-
-    if (!query) return m.reply("Escribe algo para buscar 😾");
-
-    m.reply("🔎 Buscando en Pinterest...");
-
-    const imagen = await buscarPinterest(query);
-
-    if (!imagen) return m.reply("❌ No encontré nada.");
-
-    await conn.sendMessage(m.chat, {
-        image: { url: imagen },
-        caption: `📌 Resultado para: ${query}`
-    });
-}
+        } catch (e) { console.error('❌ Error en eventos de grupo:', e); }
     });
 }
 
