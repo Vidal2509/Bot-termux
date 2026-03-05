@@ -17,21 +17,11 @@ Este es el menú de *${global.wm || 'Bot de Vidal'}*
 
 🛠️ *SISTEMA:*
 - *.hola* (Saludo del bot)
-- *.menu* (Muestra esta lista)
+- *.menu* (Muestra esta lista)`
 
-> 💻 Ejecutado desde VS Code y Termux`
-
+    // Enviamos solo el texto, sin previsualizaciones de links
     await conn.sendMessage(m.chat, { 
-        text: textoMenu,
-        contextInfo: {
-            externalAdReply: {
-                title: 'Vidal Bot - Active System',
-                body: 'Online 2026',
-                sourceUrl: '',
-                mediaType: 1,
-                renderLargerThumbnail: false
-            }
-        }
+        text: textoMenu 
     }, { quoted: m })
 }
 
