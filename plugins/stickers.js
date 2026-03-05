@@ -7,22 +7,42 @@ const execPromise = promisify(exec)
 
 const handler = async (m, { conn, text }) => {
   try {
-    const buffer = await m.download()
-    if (!buffer) return m.reply('📸 Responde a una imagen')
+    const q = m.quoted ? m.quoted : m
+    const buffer = await q.download()
+    if (!buffer) return conn.sendMessage(m.chat, { text: '📸 Responde a una imagen' }, { quoted: m })
 
     const foto = await Jimp.read(buffer)
-    foto.cover(512, 512)
+    
+    // 1. SOLUCIÓN AL RECORTE: Usamos contain para que la imagen quepa completa
+    // Agrega franjas transparentes a los lados o arriba según sea necesario
+    foto.contain(512, 512, Jimp.HORIZONTAL_ALIGN_CENTER | Jimp.VERTICAL_ALIGN_MIDDLE)
 
     if (text) {
-      const fontWhite = await Jimp.loadFont(Jimp.FONT_SANS_64_WHITE)
-      const fontBlack = await Jimp.loadFont(Jimp.FONT_SANS_64_BLACK)
-      const y = 380
-      for (let i = -2; i <= 2; i++) {
-        for (let j = -2; j <= 2; j++) {
-          foto.print(fontBlack, i, y + j, { text, alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER }, 512)
+      // Usamos una fuente un poco más pequeña (32) para que quepa más texto
+      const fontWhite = await Jimp.loadFont(Jimp.FONT_SANS_32_WHITE)
+      const fontBlack = await Jimp.loadFont(Jimp.FONT_SANS_32_BLACK)
+      
+      // 2. SOLUCIÓN AL TEXTO: Definimos un ancho máximo (480px) para que haga salto de línea
+      const maxWidth = 480
+      const x = 16 
+      const y = 350 // Ajusta este valor si quieres el texto más arriba o abajo
+
+      // Dibujar contorno negro para legibilidad
+      for (let i = -1; i <= 1; i++) {
+        for (let j = -1; j <= 1; j++) {
+          foto.print(fontBlack, x + i, y + j, {
+            text: text,
+            alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+            alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE
+          }, maxWidth)
         }
       }
-      foto.print(fontWhite, 0, y, { text, alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER }, 512)
+      // Dibujar texto blanco central
+      foto.print(fontWhite, x, y, {
+        text: text,
+        alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+        alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE
+      }, maxWidth)
     }
 
     const tempPNG = `./${Date.now()}.png`
@@ -30,22 +50,19 @@ const handler = async (m, { conn, text }) => {
     
     await foto.writeAsync(tempPNG)
 
-    // Esta línea es la magia: convierte PNG a Sticker WebP real
-    await execPromise(`ffmpeg -i ${tempPNG} -vf "scale=512:512:force_original_aspect_ratio=decrease,pad=512:512:(ow-iw)/2:(oh-ih)/2:color=#00000000" -vcodec libwebp -lossless 1 -loop 0 -preset default -an -vsync 0 ${tempWebP}`)
+    // Conversión limpia con FFmpeg
+    await execPromise(`ffmpeg -i ${tempPNG} -vcodec libwebp -lossless 1 -loop 0 -preset default -an -vsync 0 -s 512:512 ${tempWebP}`)
 
     const stickerBuffer = fs.readFileSync(tempWebP)
 
-    await conn.sendMessage(m.chat, { 
-      sticker: stickerBuffer 
-    }, { quoted: m })
+    await conn.sendMessage(m.chat, { sticker: stickerBuffer }, { quoted: m })
 
-    // Limpiamos los archivos temporales
     if (fs.existsSync(tempPNG)) fs.unlinkSync(tempPNG)
     if (fs.existsSync(tempWebP)) fs.unlinkSync(tempWebP)
 
   } catch (e) {
     console.error(e)
-    m.reply('❌ Hubo un fallo al convertir el sticker.')
+    conn.sendMessage(m.chat, { text: '❌ Hubo un fallo.' }, { quoted: m })
   }
 }
 
