@@ -27,14 +27,14 @@ await m.reply(`🎧 Descargando *${vid.title}*`)
 
 const file = `./tmp/${Date.now()}.mp3`
 
-const ytdlp = os.platform() === "win32" ? "yt-dlp.exe" : "yt-dlp"
+// Detectamos si es Windows o Linux (Termux)
+const comandoyt = os.platform() === "win32" ? "python -m yt_dlp" : "yt-dlp"
 
-exec(`python -m yt_dlp -x --audio-format mp3 -o "${file}" ${vid.url}`, async (err) => {
-
-if (err) {
-console.log(err)
-return m.reply("❌ Error descargando audio")
-}
+exec(`${comandoyt} -x --audio-format mp3 -o "${file}" ${vid.url}`, async (err) => {
+    if (err) {
+        console.error(err)
+        return m.reply("❌ Error descargando audio. Asegúrate de tener yt-dlp instalado en Termux.")
+    }
 
 await conn.sendMessage(m.chat,{
 audio: fs.readFileSync(file),
