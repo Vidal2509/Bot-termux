@@ -36,44 +36,43 @@ async function iniciarBot() {
     const pluginsDir = join(process.cwd(), 'plugins');
     const pluginFiles = readdirSync(pluginsDir).filter(file => file.endsWith('.js'));
 
-    conn.ev.on('messages.upsert', async ({ messages }) => {
+   conn.ev.on('messages.upsert', async ({ messages }) => {
         const m = messages[0];
         if (!m.message || m.key.fromMe) return;
 
         m.chat = m.key.remoteJid;
-        
-        // --- FUNCIÓN DE DESCARGA UNIVERSAL (CORREGIDA) ---
-        m.download = async () => {
-            const quoted = m.message.extendedTextMessage?.contextInfo?.quotedMessage;
-            const context = m.message.extendedTextMessage?.contextInfo;
-            
-            // Buscamos el mensaje real (ya sea citado o directo)
-            const msg = quoted ? quoted : m.message;
-            
-            // Detectamos qué tipo de archivo es
-            let type = Object.keys(msg)[0];
-            if (type === 'messageContextInfo') type = Object.keys(msg)[1];
-            
-            const mediaMsg = msg[type];
-            if (!mediaMsg || !mediaMsg.mimetype) return null;
+        const prefix = '.'; 
 
-            // Detectamos el tipo para Baileys (image, video, audio, document)
-            const downloadType = type.replace('Message', '');
-            
-            const stream = await downloadContentFromMessage(mediaMsg, downloadType);
-            let buffer = Buffer.from([]);
-            for await (const chunk of stream) {
-                buffer = Buffer.concat([buffer, chunk]);
-            }
-            return buffer;
+        // --- FUNCIONES GLOBALES ---
+        m.reply = (text) => conn.sendMessage(m.chat, { text }, { quoted: m });
+        m.download = async () => {
+            const quoted = m.message.extendedTextMessage?.contextInfo?.quotedMessage || m.message;
+            let type = Object.keys(quoted)[0];
+            if (type === 'messageContextInfo') type = Object.keys(quoted)[1];
+            const mediaMsg = quoted[type];
+            if (!mediaMsg || !mediaMsg.mimetype) return null;
+            const stream = await downloadContentFromMessage(mediaMsg, type.replace('Message', ''));
+            let b = Buffer.from([]);
+            for await (const c of stream) b = Buffer.concat([b, c]);
+            return b;
         };
 
         const texto = m.message.conversation || m.message.extendedTextMessage?.text || m.message.imageMessage?.caption || "";
-        const prefix = '.';
-        if (!texto.startsWith(prefix)) return;
 
-        const args = texto.trim().split(/ +/).slice(1);
-        const commandName = texto.slice(prefix.length).trim().split(' ')[0].toLowerCase();
+        // --- LÓGICA DE FILTRO ---
+        const isGroup = m.chat.endsWith('@g.us');
+        const botNumber = conn.user.id.split(':')[0];
+        const estaMencionado = texto.includes(`@${botNumber}`);
+        const tienePrefijo = texto.startsWith(prefix);
+
+        // Si es grupo y NO tiene prefijo Y NO está mencionado, ignorar
+        if (isGroup && !tienePrefijo && !estaMencionado) return;
+
+        // Si no tiene prefijo, no buscamos plugins (esto evita que falle si solo lo mencionan para saludar)
+        if (!tienePrefijo) return;
+
+        const args = texto.slice(prefix.length).trim().split(/ +/);
+        const commandName = args.shift().toLowerCase();
         const text = args.join(' ');
 
         for (const file of pluginFiles) {
@@ -83,8 +82,7 @@ async function iniciarBot() {
                 const plugin = await import(`${pluginURL}?update=${Date.now()}`);
 
                 if (plugin.default.command.test(commandName)) {
-                    await plugin.default(m, { conn, texto, command: commandName, args, text });
-                    
+                    await plugin.default(m, { conn, texto, command: commandName, args, text, usedPrefix: prefix });
                 }
             } catch (e) {
                 console.error(`❌ Error en plugin ${file}:`, e);

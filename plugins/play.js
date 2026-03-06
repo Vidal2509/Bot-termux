@@ -1,43 +1,60 @@
-import fetch from 'node-fetch'
-import https from 'https'
+import yts from 'yt-search'
+import { exec } from 'child_process'
+import fs from 'fs'
+import os from 'os'
 
-const handler = async (m, { conn, args, usedPrefix, command }) => {
-  if (!args[0]) return conn.sendMessage(m.chat, { text: `@ Ingresa el enlace de TikTok o YouTube.\n\n*Ejemplo:* ${usedPrefix + command} https://youtu.be/xxxx` }, { quoted: m })
+const handler = async (m, { conn, text, usedPrefix, command }) => {
 
-  try {
-    const url = args[0]
-    const agent = new https.Agent({ rejectUnauthorized: false })
-    let audioUrl = null
+if (!text) {
+return m.reply(`⚠️ Escribe una canción
 
-    // --- SI ES TIKTOK: USAMOS TIKWM (Directo y Rápido) ---
-    if (url.includes('tiktok.com')) {
-      const res = await fetch(`https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`, { agent })
-      const json = await res.json()
-      audioUrl = json.data?.music || json.data?.music_info?.play
-    } 
+Ejemplo:
+${usedPrefix + command} Believer`)
+}
 
-    // --- SI ES YOUTUBE O FALLÓ TIKTOK: USAMOS API DE RESPALDO ---
-    if (!audioUrl) {
-      const res2 = await fetch(`https://api.agatz.xyz/api/ytdl?url=${encodeURIComponent(url)}`, { agent })
-      const json2 = await res2.json()
-      // Buscamos el enlace que sea de audio/mp3
-      audioUrl = json2.data?.data?.find(v => v.type === 'mp3')?.url || json2.data?.url
-    }
+try {
 
-    if (!audioUrl) throw 'No se pudo obtener el audio.'
+const search = await yts(text)
+const vid = search.videos[0]
 
-    await conn.sendMessage(m.chat, { 
-      audio: { url: audioUrl }, 
-      mimetype: 'audio/mpeg',
-      fileName: `audio.mp3`,
-      ptt: false 
-    }, { quoted: m })
+if (!vid) return m.reply("❌ No se encontró el video")
 
-  } catch (e) {
-    console.error('Error en audio:', e)
-    conn.sendMessage(m.chat, { text: '❌ No se pudo descargar el audio. Intenta con otro link.' }, { quoted: m })
-  }
+if (vid.seconds > 900) {
+return m.reply("❌ Máximo 15 minutos")
+}
+
+await m.reply(`🎧 Descargando *${vid.title}*`)
+
+const file = `./tmp/${Date.now()}.mp3`
+
+const ytdlp = os.platform() === "win32" ? "yt-dlp.exe" : "yt-dlp"
+
+exec(`python -m yt_dlp -x --audio-format mp3 -o "${file}" ${vid.url}`, async (err) => {
+
+if (err) {
+console.log(err)
+return m.reply("❌ Error descargando audio")
+}
+
+await conn.sendMessage(m.chat,{
+audio: fs.readFileSync(file),
+mimetype: 'audio/mpeg',
+fileName: vid.title + ".mp3"
+},{ quoted: m })
+
+fs.unlinkSync(file)
+
+})
+
+} catch (e) {
+
+console.log(e)
+m.reply("❌ Error en el comando")
+
+}
+
 }
 
 handler.command = /^(play|mp3|audio)$/i
+
 export default handler
