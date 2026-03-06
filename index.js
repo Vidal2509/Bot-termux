@@ -42,12 +42,25 @@ async function iniciarBot() {
 
         m.chat = m.key.remoteJid;
         
-        // --- FUNCIÓN PARA DESCARGAR IMÁGENES (AGREGADA) ---
+        // --- FUNCIÓN DE DESCARGA UNIVERSAL (CORREGIDA) ---
         m.download = async () => {
             const quoted = m.message.extendedTextMessage?.contextInfo?.quotedMessage;
-            const msg = quoted ? (quoted.imageMessage || null) : (m.message.imageMessage || null);
-            if (!msg) return null;
-            const stream = await downloadContentFromMessage(msg, 'image');
+            const context = m.message.extendedTextMessage?.contextInfo;
+            
+            // Buscamos el mensaje real (ya sea citado o directo)
+            const msg = quoted ? quoted : m.message;
+            
+            // Detectamos qué tipo de archivo es
+            let type = Object.keys(msg)[0];
+            if (type === 'messageContextInfo') type = Object.keys(msg)[1];
+            
+            const mediaMsg = msg[type];
+            if (!mediaMsg || !mediaMsg.mimetype) return null;
+
+            // Detectamos el tipo para Baileys (image, video, audio, document)
+            const downloadType = type.replace('Message', '');
+            
+            const stream = await downloadContentFromMessage(mediaMsg, downloadType);
             let buffer = Buffer.from([]);
             for await (const chunk of stream) {
                 buffer = Buffer.concat([buffer, chunk]);
@@ -71,7 +84,7 @@ async function iniciarBot() {
 
                 if (plugin.default.command.test(commandName)) {
                     await plugin.default(m, { conn, texto, command: commandName, args, text });
-                    console.log(`✅ Ejecutado: ${commandName}`);
+                    
                 }
             } catch (e) {
                 console.error(`❌ Error en plugin ${file}:`, e);

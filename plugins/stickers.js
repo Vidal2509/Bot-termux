@@ -7,64 +7,67 @@ const execPromise = promisify(exec)
 
 const handler = async (m, { conn, text }) => {
   try {
-    const q = m.quoted ? m.quoted : m
-    const buffer = await q.download()
-    if (!buffer) return conn.sendMessage(m.chat, { text: '📸 Responde a una imagen' }, { quoted: m })
+    const buffer = await m.download()
+    if (!buffer) return conn.sendMessage(m.chat, { text: '📸 Responde a una imagen o video/gif' }, { quoted: m })
 
-    const foto = await Jimp.read(buffer)
-    // Mantiene la imagen completa sin recortes feos
-    foto.contain(512, 512, Jimp.HORIZONTAL_ALIGN_CENTER | Jimp.VERTICAL_ALIGN_MIDDLE)
+    const quoted = m.message.extendedTextMessage?.contextInfo?.quotedMessage || m.message
+    const isVideo = !!(quoted.videoMessage || quoted.gifPlayback)
+    const tempIn = `./${Date.now()}.${isVideo ? 'mp4' : 'png'}`
+    const tempOut = `./${Date.now()}.webp`
+    fs.writeFileSync(tempIn, buffer)
 
-    if (text) {
-      // Cargamos fuente 64 (Siempre Grande)
-      const fontWhite = await Jimp.loadFont(Jimp.FONT_SANS_64_WHITE)
-      const fontBlack = await Jimp.loadFont(Jimp.FONT_SANS_64_BLACK)
+    if (!isVideo) {
+      // --- PROCESO PARA IMÁGENES (CON CONTORNO NEGRO) ---
+      const foto = await Jimp.read(tempIn)
+      foto.contain(512, 512)
 
-      const maxWidth = 460
-      const x = 26
-      
-      // Calculamos cuánto mide el bloque de texto en total
-      const textHeight = Jimp.measureTextHeight(fontWhite, text, maxWidth)
-      
-      // Posición dinámica: El texto se apoya en el fondo (490) y crece hacia arriba
-      let yPos = 490 - textHeight
+      if (text) {
+        // Decidir tamaño de fuente según longitud del texto
+        const fontPath = text.length > 30 ? Jimp.FONT_SANS_32_WHITE : Jimp.FONT_SANS_64_WHITE
+        const fontPathBlack = text.length > 30 ? Jimp.FONT_SANS_32_BLACK : Jimp.FONT_SANS_64_BLACK
+        
+        const fontWhite = await Jimp.loadFont(fontPath)
+        const fontBlack = await Jimp.loadFont(fontPathBlack)
+        
+        const maxWidth = 460
+        const x = 26
+        const textHeight = Jimp.measureTextHeight(fontWhite, text, maxWidth)
+        let yPos = 490 - textHeight
+        if (yPos < 10) yPos = 10
 
-      // Evitamos que el texto se salga por arriba si es demasiado largo
-      if (yPos < 10) yPos = 10
-
-      // Dibujar contorno negro (Grosor 2 para fuente 64)
-      for (let i = -2; i <= 2; i++) {
-        for (let j = -2; j <= 2; j++) {
-          foto.print(fontBlack, x + i, yPos + j, {
-            text: text,
-            alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER
-          }, maxWidth)
+        // Dibujar CONTORNO NEGRO (Grosor 2)
+        for (let i = -2; i <= 2; i++) {
+          for (let j = -2; j <= 2; j++) {
+            foto.print(fontBlack, x + i, yPos + j, { text, alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER }, maxWidth)
+          }
         }
+        // Dibujar TEXTO BLANCO
+        foto.print(fontWhite, x, yPos, { text, alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER }, maxWidth)
       }
+      await foto.writeAsync(tempIn)
+      await execPromise(`ffmpeg -i ${tempIn} -vcodec libwebp -lossless 1 -loop 0 -preset default -an -vsync 0 -s 512:512 ${tempOut}`)
+    } else {
+      // --- PROCESO PARA VIDEOS/GIFS (FFMPEG) ---
+      let fontSize = text && text.length > 30 ? 32 : 50
+      let filter = `scale=512:512:force_original_aspect_ratio=decrease,pad=512:512:(ow-iw)/2:(oh-ih)/2:color=#00000000`
       
-      // Dibujar texto blanco principal
-      foto.print(fontWhite, x, yPos, {
-        text: text,
-        alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER
-      }, maxWidth)
+      if (text) {
+        const cleanText = text.replace(/[':;]/g, '')
+        // borderw=3 y bordercolor=black simulan el contorno de Jimp
+        filter += `,drawtext=text='${cleanText}':fontcolor=white:fontsize=${fontSize}:x=(w-text_w)/2:y=h-text_h-30:borderw=3:bordercolor=black`
+      }
+      await execPromise(`ffmpeg -t 6 -i ${tempIn} -vcodec libwebp -vf "${filter}" -lossless 1 -loop 0 -preset default -an -vsync 0 -s 512:512 ${tempOut}`)
     }
 
-    const tempPNG = `./${Date.now()}.png`
-    const tempWebP = `./${Date.now()}.webp`
-    await foto.writeAsync(tempPNG)
-
-    // Conversión optimizada
-    await execPromise(`ffmpeg -i ${tempPNG} -vcodec libwebp -lossless 1 -loop 0 -preset default -an -vsync 0 -s 512:512 ${tempWebP}`)
-
-    const stickerBuffer = fs.readFileSync(tempWebP)
-    await conn.sendMessage(m.chat, { sticker: stickerBuffer }, { quoted: m })
-
-    if (fs.existsSync(tempPNG)) fs.unlinkSync(tempPNG)
-    if (fs.existsSync(tempWebP)) fs.unlinkSync(tempWebP)
+    await conn.sendMessage(m.chat, { sticker: fs.readFileSync(tempOut) }, { quoted: m })
+    
+    // Limpieza
+    if (fs.existsSync(tempIn)) fs.unlinkSync(tempIn)
+    if (fs.existsSync(tempOut)) fs.unlinkSync(tempOut)
 
   } catch (e) {
     console.error(e)
-    conn.sendMessage(m.chat, { text: '❌ Hubo un fallo al crear el sticker.' }, { quoted: m })
+    conn.sendMessage(m.chat, { text: '❌ Error al crear sticker.' }, { quoted: m })
   }
 }
 
