@@ -36,14 +36,13 @@ async function iniciarBot() {
     const pluginsDir = join(process.cwd(), 'plugins');
     const pluginFiles = readdirSync(pluginsDir).filter(file => file.endsWith('.js'));
 
-   conn.ev.on('messages.upsert', async ({ messages }) => {
+    conn.ev.on('messages.upsert', async ({ messages }) => {
         const m = messages[0];
         if (!m.message || m.key.fromMe) return;
 
         m.chat = m.key.remoteJid;
         const prefix = '.'; 
 
-        // --- FUNCIONES GLOBALES ---
         m.reply = (text) => conn.sendMessage(m.chat, { text }, { quoted: m });
         m.download = async () => {
             const quoted = m.message.extendedTextMessage?.contextInfo?.quotedMessage || m.message;
@@ -59,16 +58,13 @@ async function iniciarBot() {
 
         const texto = m.message.conversation || m.message.extendedTextMessage?.text || m.message.imageMessage?.caption || "";
 
-        // --- LÓGICA DE FILTRO ---
         const isGroup = m.chat.endsWith('@g.us');
         const botNumber = conn.user.id.split(':')[0];
         const estaMencionado = texto.includes(`@${botNumber}`);
         const tienePrefijo = texto.startsWith(prefix);
 
-        // Si es grupo y NO tiene prefijo Y NO está mencionado, ignorar
         if (isGroup && !tienePrefijo && !estaMencionado) return;
 
-        // Definimos comando y argumentos
         const args = tienePrefijo ? texto.slice(prefix.length).trim().split(/ +/) : texto.trim().split(/ +/);
         const commandName = args.shift().toLowerCase();
         const text = args.join(' ');
@@ -79,16 +75,33 @@ async function iniciarBot() {
                 const pluginURL = `file://${pluginPath.replace(/\\/g, '/')}`;
                 const plugin = await import(`${pluginURL}?update=${Date.now()}`);
 
-                // Ejecutar si coincide el comando O si el plugin tiene lógica para mensajes sin comando (como las respuestas)
                 if (plugin.default.command && plugin.default.command.test(commandName)) {
                     await plugin.default(m, { conn, texto, command: commandName, args, text, usedPrefix: prefix });
-                } else if (plugin.default.before) { // Esto permite que el plugin "escuche" respuestas
+                } else if (plugin.default.before) {
                     await plugin.default.before(m, { conn, texto, isGroup });
                 }
             } catch (e) {
                 console.error(`❌ Error en plugin ${file}:`, e);
             }
         }
+    });
+
+    // --- ESTE ES EL BLOQUE QUE FALTABA ---
+    conn.ev.on('group-participants.update', async (anu) => {
+        try {
+            let metadata = await conn.groupMetadata(anu.id);
+            let participantes = anu.participants;
+            for (let num of participantes) {
+                let userTag = num.split('@')[0];
+                if (anu.action == 'add') {
+                    let saludo = `🌟 ¡Bienvenido/a @${userTag}!\n📍 Grupo: *${metadata.subject}*`;
+                    await conn.sendMessage(anu.id, { text: saludo, mentions: [num] });
+                } else if (anu.action == 'remove') {
+                    let despedida = `👋 Adiós @${userTag}, ¡esperamos que vuelvas pronto!`;
+                    await conn.sendMessage(anu.id, { text: despedida, mentions: [num] });
+                }
+            }
+        } catch (e) { console.error('❌ Error en eventos de grupo:', e); }
     });
 }
 
