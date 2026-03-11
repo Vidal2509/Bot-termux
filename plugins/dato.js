@@ -45,7 +45,7 @@ const handler = async (m, { conn }) => {
             "💀 @[user] se fue a un hotel con una chica y al llegar descubrio que era hombre ",
             "😈 @[user] tiene la tanga de @[user2] pero la mantiene escondida ",
             "🤡 @[user] entro a las mensolimpiadas y gano por mucha diferencia",
-            "🤩 @[user] dijo que queria mandaba fotos en tanga gratis",
+            "🤩 @[user] dijo que mandaba fotos en tanga gratis",
             "😇 @[user] me dijo que si le daba waifus me daba  unas buenas chupadas de pinga",
             "😏 Dicen que @[user] borra los mensajes después de las 3 am… algo oculta.",
             "💘 @[user] mira mucho a @[user2], pero finge que no pasa nada.",
@@ -59,6 +59,18 @@ const handler = async (m, { conn }) => {
             "🧠 a @[user] lo corrieron del rancho de su abuelo por culiarse a un caballo.",
             "🕵️ El FBI debería arrestar a @[user], por lo que tiene en su galeria.",
             "😈 @[user] jura que es buena persona… pero su historial dice otra cosa.",
+            "🔥 @[user] le dio la cola a  @[user2].",
+            "😳 @[user] se estaba besando con el admin atras de la plaza.",
+            "✨ @[user] tiene puras lolis en su galeria.",
+            "😏 Dicen que @[user] hace trabajos manuales atras de los baños.",
+            "🤫 @[user] se pone los vestidos de su mama cuando esta solo ",
+            "🤫 @[user] Tiene fotos de alexis vetido de femboy no se cuanto le habra pagado ",
+            "😳 @[user] Tiene un dildo en su lista de deseos de mercado libre, aunque no se porque.",
+            "😈 No le doy datos a geys.",
+            "🔥 @[user] invito al monte a @[user2] aunque no se para que.",
+            "😏 @[user] se esta haciendo una paja, lo estoy viendo por la camara de su telefono .",
+            "✨ @[user] Ve my little pony..... porque se quiere coger a los ponys.",
+
         ];
 
 

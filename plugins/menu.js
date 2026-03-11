@@ -2,7 +2,11 @@ const handler = async (m, { conn }) => {
     let name = m.pushName || 'Usuario'
     let textoMenu = `👋 ¡Hola, *${name}*!
 
-Este es el menú de *${global.wm || 'Bot de Vidal'}*
+Este es el menú de *${global.wm || 'Bot del admin'}*
+
+🎮 *JUEGOS:*
+- *.suerte (No disponible por mantenimiento)
+- *.medir [texto] @usuario* (Mide qué tan feo, pro o gay es alguien)
 
 🎨 *CREATIVIDAD:*
 - *.s [texto]* (Crea sticker con texto inteligente)

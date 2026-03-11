@@ -68,10 +68,8 @@ async function iniciarBot() {
         // Si es grupo y NO tiene prefijo Y NO está mencionado, ignorar
         if (isGroup && !tienePrefijo && !estaMencionado) return;
 
-        // Si no tiene prefijo, no buscamos plugins (esto evita que falle si solo lo mencionan para saludar)
-        if (!tienePrefijo) return;
-
-        const args = texto.slice(prefix.length).trim().split(/ +/);
+        // Definimos comando y argumentos
+        const args = tienePrefijo ? texto.slice(prefix.length).trim().split(/ +/) : texto.trim().split(/ +/);
         const commandName = args.shift().toLowerCase();
         const text = args.join(' ');
 
@@ -81,31 +79,16 @@ async function iniciarBot() {
                 const pluginURL = `file://${pluginPath.replace(/\\/g, '/')}`;
                 const plugin = await import(`${pluginURL}?update=${Date.now()}`);
 
-                if (plugin.default.command.test(commandName)) {
+                // Ejecutar si coincide el comando O si el plugin tiene lógica para mensajes sin comando (como las respuestas)
+                if (plugin.default.command && plugin.default.command.test(commandName)) {
                     await plugin.default(m, { conn, texto, command: commandName, args, text, usedPrefix: prefix });
+                } else if (plugin.default.before) { // Esto permite que el plugin "escuche" respuestas
+                    await plugin.default.before(m, { conn, texto, isGroup });
                 }
             } catch (e) {
                 console.error(`❌ Error en plugin ${file}:`, e);
             }
         }
-    });
-
-    conn.ev.on('group-participants.update', async (anu) => {
-        try {
-            let metadata = await conn.groupMetadata(anu.id);
-            let participantes = anu.participants;
-            for (let num of participantes) {
-                let jid = typeof num === 'string' ? num : num.id;
-                let userTag = jid.split('@')[0];
-                if (anu.action == 'add') {
-                    let saludo = `🌟 ¡Bienvenido/a @${userTag}!\n📍 Grupo: *${metadata.subject}*`;
-                    await conn.sendMessage(anu.id, { text: saludo, mentions: [jid] });
-                } else if (anu.action == 'remove') {
-                    let despedida = `👋 Adiós @${userTag}, ¡esperamos que vuelvas pronto!`;
-                    await conn.sendMessage(anu.id, { text: despedida, mentions: [jid] });
-                }
-            }
-        } catch (e) { console.error('❌ Error en eventos de grupo:', e); }
     });
 }
 
