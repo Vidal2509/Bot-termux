@@ -17,19 +17,34 @@ async function iniciarBot() {
         browser: ['Windows', 'Chrome', '1.1.0']
     });
 
-    conn.ev.on('connection.update', (update) => {
-        const { connection, lastDisconnect, qr } = update;
-        if (qr) {
-            console.log('\n📢 ESCANEA EL QR:\n');
-            qrcode.generate(qr, { small: true });
+   conn.ev.on('connection.update', async (update) => {
+    const { connection, lastDisconnect, qr } = update;
+
+    // 1. Mostrar el QR de forma clara
+    if (qr) {
+        console.clear(); // Limpia la consola para que el QR se vea bien
+        console.log('-------------------------------------------');
+        console.log('📢 ESCANEA EL SIGUIENTE CÓDIGO QR');
+        console.log('-------------------------------------------');
+        qrcode.generate(qr, { small: true });
+        console.log('-------------------------------------------');
+    }
+
+    // 2. Manejo inteligente de desconexiones
+    if (connection === 'close') {
+        const shouldReconnect = (new Boom(lastDisconnect?.error))?.output?.statusCode !== DisconnectReason.loggedOut;
+        
+        console.log('⚠️ Conexión cerrada. ¿Reintentando?:', shouldReconnect);
+
+        if (shouldReconnect) {
+            // Si el error es por "tiempo de espera" o "conflicto", esperamos un poco más
+            const delay = lastDisconnect?.error?.output?.statusCode === DisconnectReason.restartRequired ? 1000 : 5000;
+            setTimeout(() => iniciarBot(), delay);
         }
-        if (connection === 'close') {
-            const code = new Boom(lastDisconnect?.error)?.output?.statusCode;
-            if (code !== DisconnectReason.loggedOut) setTimeout(() => iniciarBot(), 3000);
-        } else if (connection === 'open') {
-            console.log('\n✅ ¡BOT CONECTADO!\n');
-        }
-    });
+    } else if (connection === 'open') {
+        console.log('\n✅ ¡BOT CONECTADO CON ÉXITO!\n');
+    }
+});
 
     conn.ev.on('creds.update', saveCreds);
 
