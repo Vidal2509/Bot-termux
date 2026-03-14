@@ -18,7 +18,6 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     const rate = "+42%"  // Más rápida para dar fluidez al ritmo
     const pitch = "+28Hz" // Más aguda para igualar el timbre de Momoi
 
-    m.reply("🎤 *Momoi está grabando un audio belicón...*")
 
     try {
         const textoLimpio = text.replace(/"/g, '')
