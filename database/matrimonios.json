@@ -2,19 +2,30 @@
   "usuarios": {
     "280139359338689@lid": {
       "nombre": "Peter",
-      "esposas": [],
-      "cooldown": 1773538088360,
-      "cooldownRobo": 1773539274260
+      "esposas": [
+        "Ellen joe"
+      ],
+      "cooldown": 1773596083496,
+      "cooldownRobo": 1773539274260,
+      "cooldownWaifu": 1773594226277
     },
     "232692788547748@lid": {
       "nombre": "owo",
-      "esposas": [],
+      "esposas": [
+      ],
       "cooldown": 1773539310352
     },
     "275724317540403@lid": {
       "nombre": "Marco",
       "esposas": [],
       "cooldown": 1773541887280
+    },
+    "123252894625848@lid": {
+      "nombre": "Shadow",
+      "esposas": [
+      ],
+      "cooldown": 0,
+      "cooldownWaifu": 1773595778546
     }
   }
 }
