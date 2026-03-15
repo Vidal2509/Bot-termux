@@ -19,17 +19,24 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     const pitch = "+28Hz" // Más aguda para igualar el timbre de Momoi
 
 
-    try {
+   try {
         const textoLimpio = text.replace(/"/g, '')
         
-        // 1. Generar audio base
-        await execPromise(`edge-tts --voice ${voz} --rate ${rate} --pitch ${pitch} --text "${textoLimpio}" --write-media "${mp3}"`)
+        // --- DETECCIÓN DE SISTEMA ---
+        // En Windows el comando es 'python', en Termux es 'python3' o 'edge-tts' directamente
+        const esWindows = process.platform === 'win32'
+        const comandoBase = esWindows ? 'python -m edge_tts' : 'python3 -m edge_tts'
+
+        m.reply(`🎤 *Generando voz en ${esWindows ? 'Windows' : 'Termux'}...*`)
+
+        // 1. Generar audio con el comando adaptado
+        await execPromise(`${comandoBase} --voice ${voz} --rate ${rate} --pitch ${pitch} --text "${textoLimpio}" --write-media "${mp3}"`)
 
         if (!fs.existsSync(mp3)) throw new Error("No se pudo generar el archivo base.")
 
-        // 2. Convertir a OGG + Efecto de Eco/Reverberación
-        // El filtro "aecho" le da ese toque de micrófono de escenario
+        // 2. Convertir a OGG + Efecto de Eco
         await execPromise(`ffmpeg -y -i "${mp3}" -af "aecho=0.8:0.88:60:0.4" -c:a libopus -b:a 128k "${ogg}"`)
+// ... resto del código
 
         if (!fs.existsSync(ogg)) throw new Error("Error en la conversión.")
 

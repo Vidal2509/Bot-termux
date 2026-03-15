@@ -101,22 +101,47 @@ async function iniciarBot() {
         }
     });
 
-    // --- ESTE ES EL BLOQUE QUE FALTABA ---
+  // --- BLOQUE DE GRUPOS ACTUALIZADO ---
     conn.ev.on('group-participants.update', async (anu) => {
         try {
-            let metadata = await conn.groupMetadata(anu.id);
-            let participantes = anu.participants;
+            const id = anu.id;
+            const participantes = anu.participants;
+            const action = anu.action;
+
+            let metadata;
+            try {
+                metadata = await conn.groupMetadata(id);
+            } catch {
+                metadata = { subject: "el grupo" };
+            }
+
             for (let num of participantes) {
-                let userTag = num.split('@')[0];
-                if (anu.action == 'add') {
+                // CORRECCIÓN CLAVE: Aseguramos que jid sea un string limpio
+                let jid = typeof num === 'string' ? num : (num.id || num.jid || String(num));
+                
+                // Si el ID no es válido, pasamos al siguiente
+                if (typeof jid !== 'string' || !jid) continue;
+
+                if (!jid.includes('@')) jid = `${jid}@s.whatsapp.net`;
+                let userTag = jid.split('@')[0];
+
+                if (action === 'add') {
                     let saludo = `🌟 ¡Bienvenido/a @${userTag}!\n📍 Grupo: *${metadata.subject}*`;
-                    await conn.sendMessage(anu.id, { text: saludo, mentions: [num] });
-                } else if (anu.action == 'remove') {
+                    await conn.sendMessage(id, { 
+                        text: saludo, 
+                        mentions: [jid] 
+                    });
+                } else if (action === 'remove') {
                     let despedida = `👋 Adiós @${userTag}, ¡esperamos que vuelvas pronto!`;
-                    await conn.sendMessage(anu.id, { text: despedida, mentions: [num] });
+                    await conn.sendMessage(id, { 
+                        text: despedida, 
+                        mentions: [jid] 
+                    });
                 }
             }
-        } catch (e) { console.error('❌ Error en eventos de grupo:', e); }
+        } catch (err) {
+            console.error('❌ Error crítico en eventos de grupo:', err);
+        }
     });
 }
 

@@ -1,29 +1,34 @@
-const handler = async (m, { conn }) => {
+const handler = async (m, { conn, usedPrefix }) => {
     let name = m.pushName || 'Usuario'
     let textoMenu = `👋 ¡Hola, *${name}*!
 
 Este es el menú de *${global.wm || 'Bot del admin'}*
 
+💍 *SISTEMA DE WAIFUS:*
+- *${usedPrefix}matrimonio [nombre]* (Intenta casarte con una waifu)
+- *${usedPrefix}harem* (Mira tu lista de esposas actuales)
+- *${usedPrefix}buscar [nombre]* (Mira si una waifu tiene dueño)
+- *${usedPrefix}robar [nombre]* (Intenta quitarle una waifu a alguien 😈)
+
 🎮 *JUEGOS:*
-- *.suerte (No disponible por mantenimiento)
-- *.medir [texto] @usuario* (Mide qué tan feo, pro o gay es alguien)
+- *${usedPrefix}suerte* (En mantenimiento 🛠️)
+- *${usedPrefix}medir [texto] @usuario* (Mide qué tan feo, pro o gay es alguien)
 
 🎨 *CREATIVIDAD:*
-- *.s [texto]* (Crea sticker con texto inteligente)
+- *${usedPrefix}s [texto]* (Crea sticker con texto inteligente)
 
 📥 *DESCARGAS:*
-- *.video [link]* (TikTok, Shorts, Reels)
-- *.mp3 [link]* (Música de YouTube o TikTok)
+- *${usedPrefix}video [link]* (TikTok, Shorts, Reels)
+- *${usedPrefix}mp3 [link]* (Música de YouTube o TikTok)
 
 ⏰ *RELOJ MUNDIAL:*
-- *.hora [ciudad]* (Busca cualquier ciudad del mundo)
-- *.tokyo* (Acceso rápido a Japón)
+- *${usedPrefix}hora [ciudad]* (Cualquier ciudad del mundo)
+- *${usedPrefix}tokyo* (Acceso rápido a Japón)
 
 🛠️ *SISTEMA:*
-- *.hola* (Saludo del bot)
-- *.menu* (Muestra esta lista)`
+- *${usedPrefix}hola* (Saludo del bot)
+- *${usedPrefix}menu* (Muestra esta lista)`
 
-    // Enviamos solo el texto, sin previsualizaciones de links
     await conn.sendMessage(m.chat, { 
         text: textoMenu 
     }, { quoted: m })

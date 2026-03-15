@@ -1,0 +1,16 @@
+{
+  "usuarios": {
+    "280139359338689@lid": {
+      "nombre": "Peter",
+      "esposas": [],
+      "cooldown": 1773538088360,
+      "cooldownRobo": 1773539274260
+    },
+    "232692788547748@lid": {
+      "nombre": "owo",
+      "esposas": [
+      ],
+      "cooldown": 1773539310352
+    }
+  }
+}
