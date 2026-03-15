@@ -76,7 +76,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
 
     const esEspecial = waifuE ? true : false;
     // Probabilidades: 7% especial, 15% normal
-    const probabilidad = esEspecial ? 0.07 : 0.95; 
+    const probabilidad = esEspecial ? 0.07 : 0.15; 
     const carpeta = esEspecial ? 'waifus especiales' : 'waifus';
     const imagenPath = path.join(process.cwd(), carpeta, waifuData.file);
     const imagenBuffer = fs.existsSync(imagenPath) ? fs.readFileSync(imagenPath) : null;
