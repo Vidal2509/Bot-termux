@@ -16,6 +16,18 @@ const cargarLista = (nombreArchivo) => {
     }
 };
 
+// Función para buscar imagen sin importar mayúsculas/minúsculas
+const buscarImagen = (carpeta, nombreArchivo) => {
+    const rutaCarpeta = path.join(process.cwd(), carpeta);
+    if (!fs.existsSync(rutaCarpeta)) return null;
+    
+    const archivos = fs.readdirSync(rutaCarpeta);
+    // Buscamos un archivo que coincida en minúsculas
+    const coincidencia = archivos.find(f => f.toLowerCase() === nombreArchivo.toLowerCase());
+    
+    return coincidencia ? fs.readFileSync(path.join(rutaCarpeta, coincidencia)) : null;
+};
+
 const handler = async (m, { conn, text, usedPrefix, command }) => {
     const waifusNormales = cargarLista('waifus.js');
     const waifusEspeciales = cargarLista('waifus_especiales.js');
@@ -75,16 +87,14 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     }
 
     const esEspecial = waifuE ? true : false;
-    // Probabilidades: 7% especial, 15% normal
     const probabilidad = esEspecial ? 0.07 : 0.15; 
     const carpeta = esEspecial ? 'waifus especiales' : 'waifus';
-    const imagenPath = path.join(process.cwd(), carpeta, waifuData.file);
-    const imagenBuffer = fs.existsSync(imagenPath) ? fs.readFileSync(imagenPath) : null;
+    
+    // --- NUEVA LÓGICA DE IMAGEN PERMISIVA ---
+    const imagenBuffer = buscarImagen(carpeta, waifuData.file);
 
     if (Math.random() < probabilidad) {
-        // --- ÉXITO ---
         datosUser.esposas.push(waifuData.name);
-        // COOLDOWN SI ACEPTA: 6 MINUTOS
         datosUser.cooldown = ahora + (6 * 60 * 1000); 
         fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
 
@@ -96,8 +106,6 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
             await m.reply(caption, null, { mentions: [usuarioID] });
         }
     } else {
-        // --- RECHAZO ---
-        // COOLDOWN SI RECHAZA: 4 MINUTOS
         datosUser.cooldown = ahora + (4 * 60 * 1000); 
         fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
 

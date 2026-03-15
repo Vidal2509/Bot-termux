@@ -14,10 +14,21 @@ const cargarLista = (nombreArchivo) => {
     } catch (e) { return []; }
 };
 
+// --- FUNCIÓN DE BÚSQUEDA PERMISIVA ---
+const buscarImagenReal = (carpeta, nombreArchivo) => {
+    const rutaCarpeta = path.join(process.cwd(), carpeta);
+    if (!fs.existsSync(rutaCarpeta)) return null;
+    
+    const archivos = fs.readdirSync(rutaCarpeta);
+    // Busca el archivo ignorando mayúsculas y minúsculas
+    const coincidencia = archivos.find(f => f.toLowerCase() === nombreArchivo.toLowerCase());
+    
+    return coincidencia ? fs.readFileSync(path.join(rutaCarpeta, coincidencia)) : null;
+};
+
 const handler = async (m, { conn, text, usedPrefix, command }) => {
     const waifusNormales = cargarLista('waifus.js');
     const waifusEspeciales = cargarLista('waifus_especiales.js');
-    const todasWaifus = [...waifusNormales, ...waifusEspeciales];
 
     const usuarioID = m.participant || m.key.participant || m.sender || m.remoteJid;
     if (!usuarioID || usuarioID.includes('@g.us')) return;
@@ -32,7 +43,6 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     if (!text) return m.reply(`🎤 Escribe el nombre de la waifu.\nEjemplo: ${usedPrefix + command} Ellen joe`);
     const nombreBusqueda = text.trim().toLowerCase();
     
-    // Buscar la waifu y determinar su carpeta
     const waifuE = waifusEspeciales.find(w => w.name.toLowerCase().trim() === nombreBusqueda);
     const waifuN = waifusNormales.find(w => w.name.toLowerCase().trim() === nombreBusqueda);
     const waifuData = waifuE || waifuN;
@@ -40,8 +50,8 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     if (!waifuData) return m.reply(`❌ Esa waifu no existe en las listas.`);
 
     const carpeta = waifuE ? 'waifus especiales' : 'waifus';
-    const imagenPath = path.join(process.cwd(), carpeta, waifuData.file);
-    const imagenBuffer = fs.existsSync(imagenPath) ? fs.readFileSync(imagenPath) : null;
+    // Usamos la nueva función para obtener el buffer de la imagen
+    const imagenBuffer = buscarImagenReal(carpeta, waifuData.file);
 
     // --- FUNCIÓN BUSCAR ---
     if (command === 'buscar') {
@@ -82,7 +92,6 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
         datosUser.cooldownRobo = ahora + (5 * 60 * 1000); 
 
         if (azar < 0.20) { 
-            // ÉXITO (20%)
             const idx = db.usuarios[dueñoID].esposas.findIndex(e => e.toLowerCase() === nombreBusqueda);
             const robada = db.usuarios[dueñoID].esposas.splice(idx, 1)[0];
             datosUser.esposas.push(robada);
@@ -93,7 +102,6 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
             return m.reply(capExito);
             
         } else if (azar < 0.40) { 
-            // KARMA (20%)
             const idxP = Math.floor(Math.random() * datosUser.esposas.length);
             const seVa = datosUser.esposas.splice(idxP, 1)[0];
             fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
@@ -101,7 +109,6 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
             return m.reply(`⚡ ¡EL TIRO TE SALIÓ POR LA CULATA! Intentaste robar a **${waifuData.name}**, pero tu esposa **${seVa}** se enteró y te dejó por infiel. 🤡`);
             
         } else { 
-            // RECHAZO (60%)
             fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
             const capFallo = `👮 **${waifuData.name}** es fiel a su esposo y rechazó tus sucias intenciones.`;
             if (imagenBuffer) return conn.sendMessage(m.chat, { image: imagenBuffer, caption: capFallo }, { quoted: m });
