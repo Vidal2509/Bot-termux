@@ -3,7 +3,7 @@ import path from 'path';
 
 const dataPath = './database/matrimonios.json';
 
-// --- FUNCIÓN DE SIMILITUD (Levenshtein) ---
+// Algoritmo para medir similitud entre textos
 const calcularSimilitud = (s1, s2) => {
     s1 = s1.toLowerCase();
     s2 = s2.toLowerCase();
@@ -63,41 +63,35 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     
     const nombreBusqueda = text.trim().toLowerCase();
     
-    // 1. Buscar coincidencia exacta
+    // 1. Intentar coincidencia exacta (siempre manda si es exacto)
     let waifuData = todasWaifus.find(w => w.name.toLowerCase().trim() === nombreBusqueda);
 
-    // 2. Si no hay exacta, buscar por similitud (Fuzzy)
+    // 2. Si NO es exacta, buscamos sugerencias
     if (!waifuData) {
-        // Mapeamos las waifus calculando qué tan cerca están de lo que escribió el usuario
         const mapeoSimilitud = todasWaifus.map(w => ({
             data: w,
             distancia: calcularSimilitud(nombreBusqueda, w.name.toLowerCase())
         }));
 
-        // Filtramos: si la diferencia es pequeña (ej. menos de 3 o 4 letras), lo tomamos como acierto
-        // "ninguan" vs "ningguang" tiene una distancia de 2, así que entra perfecto.
+        // Filtramos por cercanía o si el nombre contiene la palabra
         const sugerencias = mapeoSimilitud
             .filter(res => res.distancia <= 3 || res.data.name.toLowerCase().includes(nombreBusqueda))
             .sort((a, b) => a.distancia - b.distancia)
-            .slice(0, 5);
+            .slice(0, 3); // Límite de 3 sugerencias
 
         if (sugerencias.length > 0) {
-            // Si la primera sugerencia es MUY parecida, la tomamos como la waifu que buscaba
-            if (sugerencias[0].distancia <= 2) {
-                waifuData = sugerencias[0].data;
-            } else {
-                let sugerenciasTxt = `❌ No encontré a "${text}", ¿quizás quisiste decir?:\n\n`;
-                sugerencias.forEach((s, i) => {
-                    sugerenciasTxt += `${i + 1}. *${s.data.name}* (de ${s.data.anime})\n`;
-                });
-                return m.reply(sugerenciasTxt);
-            }
+            let sugerenciasTxt = `🤔 ¿Quizás quisiste decir?:\n\n`;
+            sugerencias.forEach((s, i) => {
+                sugerenciasTxt += `${i + 1}. *${s.data.name}* (de ${s.data.anime})\n`;
+            });
+            sugerenciasTxt += `\n_Escribe el nombre exacto de la lista._`;
+            return m.reply(sugerenciasTxt);
         } else {
             return m.reply(`❌ No encontré ninguna waifu parecida a "${text}".`);
         }
     }
 
-    // El resto del código se mantiene igual para BUSCAR y ROBAR...
+    // LÓGICA DE EJECUCIÓN (Solo llega aquí si waifuData fue exacta)
     const esEspecial = waifusEspeciales.some(w => w.name === waifuData.name);
     const carpeta = esEspecial ? 'waifus especiales' : 'waifus';
     const imagenBuffer = buscarImagenReal(carpeta, waifuData.file);
@@ -108,14 +102,13 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
         );
 
         const txtBase = dueñoID 
-            ? (dueñoID === usuarioID ? `💍 **${waifuData.name}** es tu esposa.` : `🕵️ **${waifuData.name}** es esposa de **${db.usuarios[dueñoID].nombre}**.`)
+            ? (dueñoID === usuarioID ? `💍 **${waifuData.name}** es tu esposa.` : `🕵️ **${waifuData.name}** es esposa de **${db.usuarios[dueñoID].nombre}** (@${dueñoID.split('@')[0]}).`)
             : `✅ **${waifuData.name}** está soltera.`;
 
         if (imagenBuffer) return conn.sendMessage(m.chat, { image: imagenBuffer, caption: txtBase, mentions: dueñoID ? [dueñoID] : [] }, { quoted: m });
         return m.reply(txtBase, null, { mentions: dueñoID ? [dueñoID] : [] });
     }
 
-    // Lógica de ROBAR (usa waifuData ya corregida por la similitud)
     if (command === 'robar') {
         if (datosUser.esposas.length < 1) return m.reply(`🚫 Necesitas al menos una esposa para robar.`);
         if (datosUser.cooldownRobo && ahora < datosUser.cooldownRobo) {
