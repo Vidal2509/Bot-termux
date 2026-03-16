@@ -4,42 +4,64 @@ import fs from 'fs'
 import os from 'os'
 
 const handler = async (m, { conn, text, usedPrefix, command }) => {
-  if (!text) return m.reply(`⚠️ Escribe una canción\n\nEjemplo:\n${usedPrefix + command} Believer`)
+  if (!text) return m.reply(`⚠️ Escribe el nombre de una canción o pega un link.\n\nEjemplo:\n${usedPrefix + command} Believer`)
 
   try {
-    const search = await yts(text)
-    const vid = search.videos[0]
-    if (!vid) return m.reply("❌ No se encontró el video")
-    if (vid.seconds > 900) return m.reply("❌ Máximo 15 minutos")
+    let vid;
+    const isUrl = text.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
 
-    await m.reply(`🎧 Descargando *${vid.title}*`)
+    if (isUrl) {
+        // Si es un link, armamos el objeto vid manualmente
+        vid = { 
+            url: isUrl[0], 
+            title: 'Audio de YouTube', 
+            seconds: 0 // Omitimos el check de tiempo para links o puedes usar otra librería
+        };
+    } else {
+        // Si no es link, buscamos normalmente
+        const search = await yts(text);
+        vid = search.videos[0];
+    }
 
-    // Asegurar que la carpeta tmp exista
+    if (!vid) return m.reply("❌ No se encontró el video");
+
+    // 2. Preparar archivos
     if (!fs.existsSync('./tmp')) fs.mkdirSync('./tmp')
-    const file = `./tmp/${Date.now()}.mp3`
+    const fileName = `./tmp/${Date.now()}.mp3`
 
-    // --- LOGICA UNIVERSAL ---
-    // En Windows usa "python -m yt_dlp", en Termux/Linux usa "yt-dlp" directamente
-    const comandoBase = os.platform() === "win32" ? "python -m yt_dlp" : "yt-dlp"
+    // 3. Lógica de comando para Termux/Windows
+    // Usamos --no-check-certificate para evitar errores de fecha en Termux
+    const ytDlp = os.platform() === "win32" ? "python -m yt_dlp" : "yt-dlp"
+    const comando = `${ytDlp} --no-check-certificate -x --audio-format mp3 --audio-quality 0 -o "${fileName}" ${vid.url}`
 
-    exec(`${comandoBase} -x --audio-format mp3 -o "${file}" ${vid.url}`, async (err) => {
+    exec(comando, async (err, stdout, stderr) => {
       if (err) {
-        console.log(err)
-        return m.reply("❌ Error descargando audio. Verifica que yt-dlp y ffmpeg estén instalados.")
+        console.error("Error de yt-dlp:", stderr)
+        return m.reply("❌ Error al procesar el audio. Asegúrate de tener ffmpeg instalado.")
       }
 
+      if (!fs.existsSync(fileName)) {
+          return m.reply("❌ El archivo no se generó correctamente.")
+      }
+
+      // 4. Enviar el audio
       await conn.sendMessage(m.chat, {
-        audio: fs.readFileSync(file),
+        audio: fs.readFileSync(fileName),
         mimetype: 'audio/mpeg',
-        fileName: vid.title + ".mp3"
+        fileName: `${vid.title}.mp3`
       }, { quoted: m })
 
-      if (fs.existsSync(file)) fs.unlinkSync(file)
+      // 5. Limpiar archivo temporal
+      try {
+          fs.unlinkSync(fileName)
+      } catch (e) {
+          console.log("Error al borrar temporal:", e)
+      }
     })
 
   } catch (e) {
-    console.log(e)
-    m.reply("❌ Error en el comando")
+    console.error("Error General:", e)
+    m.reply("❌ Hubo un fallo en el servidor de búsqueda.")
   }
 }
 

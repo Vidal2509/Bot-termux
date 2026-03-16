@@ -81,7 +81,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
         datosUser.cooldownWaifu = ahora + (2 * 60 * 1000);
         fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
 
-        const txt = `✨ **WAIFU AL AZAR** ✨\n\nHe encontrado a esta waifu soltera:\n👑 **${waifuAzar.name}**\n🎥 Anime: *${waifuAzar.anime}*\n\n_¡Puedes intentar casarte con ella usando ${usedPrefix}matrimonio!_`;
+        const txt = `✨ **WAIFU AL AZAR** ✨\n\nHe encontrado a esta waifu soltera:\n👑 **${waifuAzar.name}**\n🎥 Anime: *${waifuAzar.anime}*\n\n_¡Puedes intentar casarte con ella usando ${usedPrefix}matrimonio! (nombre de la waifu)_`;
 
         if (imagenBuffer) {
             return await conn.sendMessage(m.chat, { image: imagenBuffer, caption: txt }, { quoted: m });
