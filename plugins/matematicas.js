@@ -1,7 +1,19 @@
 import fs from 'fs';
-import { join } from 'path';
+import { join, readdirSync } from 'path';
 
 if (!global.juegosMatematicos) global.juegosMatematicos = {};
+
+// Función para buscar imagen ignorando mayúsculas/minúsculas
+const obtenerImagenBuffer = (carpeta, nombreArchivo) => {
+    const rutaCarpeta = join(process.cwd(), carpeta);
+    if (!fs.existsSync(rutaCarpeta)) return null;
+    
+    const archivos = fs.readdirSync(rutaCarpeta);
+    // Buscamos el archivo real comparando ambos en minúsculas
+    const coincidencia = archivos.find(f => f.toLowerCase() === nombreArchivo.toLowerCase());
+    
+    return coincidencia ? fs.readFileSync(join(rutaCarpeta, coincidencia)) : null;
+};
 
 const handler = async (m, { conn, command, text }) => {
     const miNumeroFiel = '280139359338689';
@@ -45,7 +57,7 @@ const handler = async (m, { conn, command, text }) => {
             const user = m.sender || m.key.participant || m.chat;
 
             try {
-                // 1. Cargar lista de waifus desde tu archivo js
+                // 1. Cargar lista de waifus
                 const pathWaifus = join(process.cwd(), 'waifus.js');
                 const waifusURL = `file://${pathWaifus.replace(/\\/g, '/')}`;
                 const { default: waifus } = await import(`${waifusURL}?update=${Date.now()}`);
@@ -58,14 +70,13 @@ const handler = async (m, { conn, command, text }) => {
                     data = JSON.parse(fs.readFileSync(pathMatrimonios, 'utf-8'));
                 }
 
-                if (!data.usuarios) data.usuarios = {};
                 if (!data.usuarios[user]) {
                     data.usuarios[user] = { nombre: m.pushName || 'Usuario', esposas: [], cooldown: 0 };
                 }
 
-                // 3. Filtrar: comparamos el nombre de la waifu contra el array de strings
-                const misEsposas = data.usuarios[user].esposas; // Aquí ya son solo strings
-                const disponibles = waifus.filter(w => !misEsposas.includes(w.name));
+                // 3. Filtrar solteras (comparación segura)
+                const misEsposas = data.usuarios[user].esposas.map(e => (typeof e === 'string' ? e.toLowerCase() : ""));
+                const disponibles = waifus.filter(w => !misEsposas.includes(w.name.toLowerCase()));
 
                 if (disponibles.length === 0) {
                     delete global.juegosMatematicos[m.chat];
@@ -74,18 +85,19 @@ const handler = async (m, { conn, command, text }) => {
 
                 const waifu = disponibles[Math.floor(Math.random() * disponibles.length)];
                 
-                // 4. GUARDAR SOLO EL NOMBRE (String simple)
+                // 4. Guardar
                 data.usuarios[user].esposas.push(waifu.name);
                 fs.writeFileSync(pathMatrimonios, JSON.stringify(data, null, 2));
 
-                const tag = user && user.includes('@') ? user.split('@')[0] : 'usuario';
+                const tag = user.split('@')[0];
                 const caption = `🎉 ¡Correcto @${tag}!\n\n✨ *Nueva Waifu:* ${waifu.name}\n📺 *Anime:* ${waifu.anime}`;
                 
-                const rutaFoto = join(process.cwd(), 'waifus', waifu.file); 
+                // 5. Búsqueda de imagen INSENSIBLE a mayúsculas
+                const imagenBuffer = obtenerImagenBuffer('waifus', waifu.file);
 
-                if (fs.existsSync(rutaFoto)) {
+                if (imagenBuffer) {
                     await conn.sendMessage(m.chat, { 
-                        image: fs.readFileSync(rutaFoto), 
+                        image: imagenBuffer, 
                         caption, 
                         mentions: [user] 
                     }, { quoted: m });
