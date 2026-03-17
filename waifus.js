@@ -1,4 +1,4 @@
-   module.exports= [
+   export default [
     { name: 'Rem', file: 'rem.jpg', anime: 'Re:Zero' ,suerteLevel: "oro" },
     { name: 'Satella', file: 'Satella.jpg', anime: 'Re:Zero',suerteLevel: "plata" },
     { name: 'Emilia', file: 'Emilia.jpg', anime: 'Re:Zero' ,suerteLevel: "cobre" },

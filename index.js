@@ -84,21 +84,27 @@ async function iniciarBot() {
         const commandName = args.shift().toLowerCase();
         const text = args.join(' ');
 
-        for (const file of pluginFiles) {
-            try {
-                const pluginPath = join(pluginsDir, file);
-                const pluginURL = `file://${pluginPath.replace(/\\/g, '/')}`;
-                const plugin = await import(`${pluginURL}?update=${Date.now()}`);
+       for (const file of pluginFiles) {
+    try {
+        const pluginPath = join(pluginsDir, file);
+        const pluginURL = `file://${pluginPath.replace(/\\/g, '/')}`;
+        const plugin = await import(`${pluginURL}?update=${Date.now()}`);
 
-                if (plugin.default.command && plugin.default.command.test(commandName)) {
-                    await plugin.default(m, { conn, texto, command: commandName, args, text, usedPrefix: prefix });
-                } else if (plugin.default.before) {
-                    await plugin.default.before(m, { conn, texto, isGroup });
-                }
-            } catch (e) {
-                console.error(`❌ Error en plugin ${file}:`, e);
-            }
+        // --- CAMBIO AQUÍ: Primero el 'before' ---
+        if (plugin.default.before) {
+            // Si el 'before' devuelve true, significa que ya procesó el mensaje (ganó alguien)
+            // y usamos 'continue' para que no intente buscar comandos después
+            if (await plugin.default.before(m, { conn, texto, isGroup })) continue;
         }
+
+        // --- LUEGO EL COMANDO NORMAL ---
+        if (plugin.default.command && plugin.default.command.test(commandName)) {
+            await plugin.default(m, { conn, texto, command: commandName, args, text, usedPrefix: prefix });
+        }
+    } catch (e) {
+        console.error(`❌ Error en plugin ${file}:`, e);
+    }
+}
     });
 
   // --- BLOQUE DE GRUPOS ACTUALIZADO ---
