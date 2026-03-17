@@ -1,15 +1,15 @@
 import fs from 'fs';
-import { join, readdirSync } from 'path';
+import { join } from 'path';
 
 if (!global.juegosMatematicos) global.juegosMatematicos = {};
 
-// Función para buscar imagen ignorando mayúsculas/minúsculas
+// Función corregida: Usamos fs.readdirSync
 const obtenerImagenBuffer = (carpeta, nombreArchivo) => {
     const rutaCarpeta = join(process.cwd(), carpeta);
     if (!fs.existsSync(rutaCarpeta)) return null;
     
+    // CAMBIO AQUÍ: Usamos fs. para acceder a readdirSync
     const archivos = fs.readdirSync(rutaCarpeta);
-    // Buscamos el archivo real comparando ambos en minúsculas
     const coincidencia = archivos.find(f => f.toLowerCase() === nombreArchivo.toLowerCase());
     
     return coincidencia ? fs.readFileSync(join(rutaCarpeta, coincidencia)) : null;
