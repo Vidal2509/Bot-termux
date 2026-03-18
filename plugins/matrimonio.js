@@ -50,7 +50,6 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
         if (ahora < globalCooldownWaifu) return m.reply(`⏳ Espera un momento.`);
         if (datosUser.cooldownWaifu && ahora < datosUser.cooldownWaifu) return m.reply(`✋ Cooldown activo.`);
 
-        // FILTRO SEGURO: Solo tomamos lo que sea texto (string)
         const casadas = Object.values(db.usuarios)
             .flatMap(u => u.esposas)
             .filter(e => typeof e === 'string') 
@@ -84,7 +83,6 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
 
     if (!waifuData) return m.reply(`❌ No existe.`);
 
-    // BUSQUEDA SEGURA DE ESPOSO: Validamos que 'e' sea string antes de toLowerCase
     let esposoActualID = Object.keys(db.usuarios).find(id => 
         db.usuarios[id].esposas.some(e => typeof e === 'string' && e.toLowerCase() === waifuData.name.toLowerCase())
     );
@@ -95,22 +93,32 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     }
 
     const esEspecial = waifusEspeciales.some(w => w.name.toLowerCase() === nombreBusqueda);
-    const probabilidad = esEspecial ? 0.07 : 0.10; 
+    
+    // --- NUEVAS PROBABILIDADES ---
+    const probabilidad = esEspecial ? 0.07 : 0.10; // 7% Especiales, 10% Normales
     const carpetaImg = esEspecial ? 'waifus especiales' : 'waifus';
     const imagenBuffer = buscarImagen(carpetaImg, waifuData.file);
 
     if (Math.random() < probabilidad) {
+        // --- ÉXITO ---
         datosUser.esposas.push(waifuData.name); 
         datosUser.cooldown = ahora + (5 * 60 * 1000); 
         fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
         
-        const caption = `💍 ¡ACEPTÓ! **${waifuData.name}** es tu esposa.`;
+        const caption = `💍 ¡ACEPTÓ! **${waifuData.name}** es ahora tu esposa.`;
         if (imagenBuffer) await conn.sendMessage(m.chat, { image: imagenBuffer, caption, mentions: [usuarioID] }, { quoted: m });
         else m.reply(caption);
     } else {
+        // --- RECHAZO (Con Foto) ---
         datosUser.cooldown = ahora + (3 * 60 * 1000); 
         fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
-        m.reply(`💔 Te rechazó.`);
+        
+        const captionRechazo = `💔 **${waifuData.name}** te ha rechazado. Suerte para la próxima.`;
+        if (imagenBuffer) {
+            await conn.sendMessage(m.chat, { image: imagenBuffer, caption: captionRechazo }, { quoted: m });
+        } else {
+            m.reply(captionRechazo);
+        }
     }
 };
 
