@@ -95,7 +95,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     }
 
     const esEspecial = waifusEspeciales.some(w => w.name.toLowerCase() === nombreBusqueda);
-    const probabilidad = esEspecial ? 0.10 : 0.70; 
+    const probabilidad = esEspecial ? 0.07 : 0.10; 
     const carpetaImg = esEspecial ? 'waifus especiales' : 'waifus';
     const imagenBuffer = buscarImagen(carpetaImg, waifuData.file);
 
