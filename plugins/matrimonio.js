@@ -3,6 +3,8 @@ import path from 'path';
 
 const dataPath = './database/matrimonios.json';
 let globalCooldownWaifu = 0; 
+// Contador global para el evento
+if (!global.contadorMatrimonios) global.contadorMatrimonios = 0;
 
 const cargarLista = (nombreArchivo) => {
     const ruta = path.join(process.cwd(), nombreArchivo);
@@ -39,7 +41,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     }
 
     if (!db.usuarios[usuarioID]) {
-        db.usuarios[usuarioID] = { nombre: m.pushName || 'Usuario', esposas: [], cooldown: 0, cooldownWaifu: 0 };
+        db.usuarios[usuarioID] = { nombre: m.pushName || 'Usuario', esposas: [], cooldown: 0, cooldownWaifu: 0, advertencias: 0 };
     }
 
     const ahora = Date.now();
@@ -70,12 +72,26 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
         return m.reply(txt);
     }
 
-    // --- COMANDO .MATRIMONIO ---
+    // --- LÓGICA DE ADVERTENCIAS ---
     if (datosUser.cooldown && ahora < datosUser.cooldown) {
-        const restante = Math.ceil((datosUser.cooldown - ahora) / 60000);
-        return m.reply(`💔 Espera **${restante} min**.`);
+        const restanteMs = datosUser.cooldown - ahora;
+        if (restanteMs > 90000) { 
+            datosUser.advertencias = (datosUser.advertencias || 0) + 1;
+            
+            if (datosUser.advertencias >= 3) {
+                datosUser.advertencias = 0;
+                let waifuPerdida = datosUser.esposas.length > 0 ? datosUser.esposas.pop() : null;
+                fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
+                return m.reply(`🚫 **SANCIÓN** 🚫\n@${usuarioID.split('@')[0]} has ignorado el cooldown repetidamente.\n💔 Perdiste a: **${waifuPerdida || 'Nada (no tenías waifus)'}**`, null, { mentions: [usuarioID] });
+            }
+            
+            fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
+            return m.reply(`⚠️ **ADVERTENCIA [${datosUser.advertencias}/3]**\nNo hagas spam si faltan más de 90s. A la tercera perderás una waifu.`);
+        }
+        return m.reply(`💔 Espera **${Math.ceil(restanteMs / 60000)} min**.`);
     }
 
+    // --- COMANDO .MATRIMONIO ---
     if (!text) return m.reply(`🎤 Di el nombre de la waifu.`);
 
     const nombreBusqueda = text.trim().toLowerCase();
@@ -93,32 +109,53 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     }
 
     const esEspecial = waifusEspeciales.some(w => w.name.toLowerCase() === nombreBusqueda);
-    
-    // --- NUEVAS PROBABILIDADES ---
-    const probabilidad = esEspecial ? 0.07 : 0.10; // 7% Especiales, 10% Normales
+    const probabilidad = esEspecial ? 0.09 : 0.15; 
     const carpetaImg = esEspecial ? 'waifus especiales' : 'waifus';
     const imagenBuffer = buscarImagen(carpetaImg, waifuData.file);
 
     if (Math.random() < probabilidad) {
-        // --- ÉXITO ---
         datosUser.esposas.push(waifuData.name); 
-        datosUser.cooldown = ahora + (5 * 60 * 1000); 
-        fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
+        datosUser.cooldown = ahora + (5 * 60 * 1000);
+        global.contadorMatrimonios++; 
+
+        // --- EVENTO "EL BOT ESTÁ MOLESTO" ---
+        if (global.contadorMatrimonios >= 3) {
+            global.contadorMatrimonios = 0; 
+            const usuariosConWaifus = Object.keys(db.usuarios).filter(id => db.usuarios[id].esposas.length > 0);
+            
+            let textoEvento = `💢 **EL BOT ESTÁ MOLESTO** 💢\nDemasiados matrimonios... ¡He decidido sembrar el caos!\n\n`;
+            let victimasTags = [];
+
+            if (usuariosConWaifus.length > 0) {
+                const shuffled = usuariosConWaifus.sort(() => 0.5 - Math.random());
+                const elegidos = shuffled.slice(0, 2);
+                
+                elegidos.forEach(id => {
+                    const waifuQuitada = db.usuarios[id].esposas.pop();
+                    textoEvento += `💔 A @${id.split('@')[0]} le quité a: **${waifuQuitada}**\n`;
+                    victimasTags.push(id);
+                });
+            } else {
+                textoEvento += `Iba a quitar waifus, pero nadie tiene ninguna... Se salvaron.`;
+            }
+
+            fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
+            // Enviamos el mensaje del evento con menciones
+            await conn.sendMessage(m.chat, { text: textoEvento, mentions: victimasTags }, { quoted: m });
+        } else {
+            fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
+        }
         
         const caption = `💍 ¡ACEPTÓ! **${waifuData.name}** es ahora tu esposa.`;
         if (imagenBuffer) await conn.sendMessage(m.chat, { image: imagenBuffer, caption, mentions: [usuarioID] }, { quoted: m });
         else m.reply(caption);
+
     } else {
-        // --- RECHAZO (Con Foto) ---
         datosUser.cooldown = ahora + (3 * 60 * 1000); 
         fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
-        
-        const captionRechazo = `💔 **${waifuData.name}** te ha rechazado. Suerte para la próxima.`;
-        if (imagenBuffer) {
-            await conn.sendMessage(m.chat, { image: imagenBuffer, caption: captionRechazo }, { quoted: m });
-        } else {
-            m.reply(captionRechazo);
-        }
+        const captionRechazo = `💔 **${waifuData.name}** te ha rechazado.`;
+        if (imagenBuffer) await conn.sendMessage(m.chat, { image: imagenBuffer, caption: captionRechazo }, { quoted: m });
+        else m.reply(captionRechazo);
     }
 };
 
