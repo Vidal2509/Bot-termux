@@ -1583,5 +1583,14 @@
 { name: 'Ruruko Nimura', file: 'ruruko nimura.jpg', anime: 'High School DxD' },
 
 
+{ name: 'Akane hououji', file: 'Akane hououji.jpg', anime: 'Megami no cafe Terrace' },
+{ name: 'Shiragiku Ono', file: 'Shiragiku Ono.jpg', anime: 'Megami no cafe Terrace' },
+{ name: 'Ouka Makuzawa', file: 'Ouka Makuzawa.jpg', anime: 'Megami no cafe Terrace' },
+{ name: 'Ami Tsuruga', file: 'Ami Tsuruga.jpg', anime: 'Megami no cafe Terrace' },
+{ name: 'Riho Tsukishima', file: 'Riho Tsukishima.jpg', anime: 'Megami no cafe Terrace' },
+{ name: 'Ririka Chiyoda', file: 'Ririka Chiyoda.jpg', anime: 'Megami no cafe Terrace' },
+
+
+
     
     ];
