@@ -70,6 +70,7 @@ const handler = async (m, { conn }) => {
             "🔥 @[user] invito al monte a @[user2] aunque no se para que.",
             "😏 @[user] se esta haciendo una paja, lo estoy viendo por la camara de su telefono .",
             "✨ @[user] Ve my little pony..... porque se quiere coger a los ponys.",
+            "🔥 @[user] le dijo a @[user2] que le daria una coca a cambio de unas chupadas de pinga.",
 
         ];
 

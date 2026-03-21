@@ -118,29 +118,58 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
         datosUser.cooldown = ahora + (5 * 60 * 1000);
         global.contadorMatrimonios++; 
 
-        // --- EVENTO "EL BOT ESTÁ MOLESTO" ---
+        // --- EVENTO "EL BOT ESTÁ MOLESTO" (PROBABILIDAD 50/50) ---
         if (global.contadorMatrimonios >= 3) {
             global.contadorMatrimonios = 0; 
-            const usuariosConWaifus = Object.keys(db.usuarios).filter(id => db.usuarios[id].esposas.length > 0);
             
-            let textoEvento = `💢 **EL BOT ESTÁ MOLESTO** 💢\nDemasiados matrimonios... ¡He decidido sembrar el caos!\n\n`;
+            if (!global.historialVictimas) global.historialVictimas = [];
+
+            let usuariosConWaifus = Object.keys(db.usuarios).filter(id => 
+                db.usuarios[id].esposas.length > 0 && 
+                !global.historialVictimas.includes(id)
+            );
+
+            if (usuariosConWaifus.length < 2) {
+                global.historialVictimas = [];
+                usuariosConWaifus = Object.keys(db.usuarios).filter(id => db.usuarios[id].esposas.length > 0);
+            }
+            
+            // Decidir tipo de evento (50% cada uno)
+            const esBombaNuclear = Math.random() < 0.5;
+            const cantidadAQuitar = esBombaNuclear ? 3 : 2;
+            
+            let textoEvento = esBombaNuclear 
+                ? `☢️ **¡¡BOMBA NUCLEAR DETONADA!!** ☢️\n¡El Rei Chiquita ha perdido el control total!\n\n`
+                : `💢 **Rei Chiquita ESTÁ MOLESTA** 💢\nDemasiados matrimonios... ¡He decidido sembrar el caos!\n\n`;
+            
             let victimasTags = [];
+            let nuevasVictimas = [];
 
             if (usuariosConWaifus.length > 0) {
                 const shuffled = usuariosConWaifus.sort(() => 0.5 - Math.random());
                 const elegidos = shuffled.slice(0, 2);
                 
                 elegidos.forEach(id => {
-                    const waifuQuitada = db.usuarios[id].esposas.pop();
-                    textoEvento += `💔 A @${id.split('@')[0]} le quité a: **${waifuQuitada}**\n`;
-                    victimasTags.push(id);
+                    let perdidas = [];
+                    for (let i = 0; i < cantidadAQuitar; i++) {
+                        if (db.usuarios[id].esposas.length > 0) {
+                            perdidas.push(db.usuarios[id].esposas.pop());
+                        }
+                    }
+                    
+                    if (perdidas.length > 0) {
+                        textoEvento += `💔 A @${id.split('@')[0]} le quité ${perdidas.length} waifus: **${perdidas.join(', ')}**\n`;
+                        victimasTags.push(id);
+                        nuevasVictimas.push(id);
+                    }
                 });
+
+                global.historialVictimas = nuevasVictimas;
             } else {
-                textoEvento += `Iba a quitar waifus, pero nadie tiene ninguna... Se salvaron.`;
+                textoEvento += `Iba a lanzar la bomba, pero nadie tiene waifus... Suerte para la próxima.`;
             }
 
             fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
-            // Enviamos el mensaje del evento con menciones
             await conn.sendMessage(m.chat, { text: textoEvento, mentions: victimasTags }, { quoted: m });
         } else {
             fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
@@ -156,6 +185,37 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
         const captionRechazo = `💔 **${waifuData.name}** te ha rechazado.`;
         if (imagenBuffer) await conn.sendMessage(m.chat, { image: imagenBuffer, caption: captionRechazo }, { quoted: m });
         else m.reply(captionRechazo);
+    }
+    // --- COMANDO .QUITARWAIFU (SOLO CREADOR) ---
+    if (command === 'quitarwaifu') {
+        const miNumeroFiel = '280139359338689'; // Tu número de creador
+        const senderNumber = (m.sender || m.participant || '').replace(/\D/g, '');
+
+        if (!senderNumber.includes(miNumeroFiel)) {
+            return m.reply('❌ No tienes permiso para usar este comando de castigo.');
+        }
+
+        // Obtener el usuario mencionado o citado
+        let victima = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : 
+                     m.quoted ? m.quoted.sender : null;
+
+        if (!victima) return m.reply('⚠️ Etiqueta a alguien o responde a su mensaje para quitarle una waifu.');
+
+        if (!db.usuarios[victima] || !db.usuarios[victima].esposas || db.usuarios[victima].esposas.length === 0) {
+            return m.reply('💨 Ese usuario no tiene waifus que perder.');
+        }
+
+        // Elegir una waifu al azar para quitarla
+        const indiceAzar = Math.floor(Math.random() * db.usuarios[victima].esposas.length);
+        const waifuQuitada = db.usuarios[victima].esposas.splice(indiceAzar, 1)[0];
+
+        // Guardar cambios en el JSON
+        fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
+
+        const tagVictima = victima.split('@')[0];
+        const msg = `🔨 **CASTIGO DIVINO** 🔨\n\nEl creador ha decidido que @${tagVictima} ya no merece a **${waifuQuitada}**.\n\n💔 La waifu ha sido eliminada de su colección.`;
+
+        return await conn.sendMessage(m.chat, { text: msg, mentions: [victima] }, { quoted: m });
     }
 };
 
