@@ -5,6 +5,11 @@ const dataPath = './database/matrimonios.json';
 let globalCooldownWaifu = 0; 
 // Contador global para el evento
 if (!global.contadorMatrimonios) global.contadorMatrimonios = 0;
+// Agrega esta línea:
+// Cambia esto al principio del archivo (fuera del handler)
+if (typeof global.eventoMatrimonio === 'undefined') {
+    global.eventoMatrimonio = true;
+}
 
 const cargarLista = (nombreArchivo) => {
     const ruta = path.join(process.cwd(), nombreArchivo);
@@ -26,12 +31,34 @@ const buscarImagen = (carpeta, nombreArchivo) => {
 };
 
 const handler = async (m, { conn, text, usedPrefix, command }) => {
+    // --- 1. SEGURIDAD DE DUEÑO (PRIMERO QUE NADA) ---
+    const miNumeroFiel = '280139359338689';
+    const emisor = m.key.participant || m.key.remoteJid || '';
+    const esCreador = emisor.includes(miNumeroFiel);
+
+    // --- 2. COMANDOS DE INTERRUPTOR (EVITA QUE OTROS LOS VEAN) ---
+    if (command === 'evento_on' || command === 'evento_off') {
+        if (!esCreador) return; // Silencio total si no eres tú
+        global.eventoMatrimonio = (command === 'evento_on');
+        return m.reply(`⚙️ **ESTADO DEL BOT** ⚙️\nSistema de matrimonios: **${global.eventoMatrimonio ? 'ACTIVADO ✅' : 'DESACTIVADO ❌'}**`);
+    }
+
+    // --- 3. BLOQUEO CRÍTICO PARA MORTALES ---
+    // Si el evento está apagado Y NO eres el creador...
+    if (global.eventoMatrimonio === false && !esCreador) {
+        // Solo bloqueamos si el usuario intenta usar comandos de juego
+        if (/^(matrimonio|casar|waifu)$/i.test(command)) {
+            return m.reply('🚫 **AVISO** 🚫\nEl sistema de matrimonios está desactivado temporalmente por el administrador.');
+        }
+    }
+    // --- 4. CARGA DE RECURSOS (SOLO SI EL SISTEMA ESTÁ ON O ERES CREADOR) ---
     const waifusNormales = cargarLista('waifus.js');
     const waifusEspeciales = cargarLista('waifus_especiales.js');
     
     const usuarioID = m.sender || m.participant || m.key.participant;
     if (!usuarioID) return; 
 
+    // --- 5. BASE DE DATOS ---
     if (!fs.existsSync('./database')) fs.mkdirSync('./database');
     let db = { usuarios: {} };
     if (fs.existsSync(dataPath)) {
@@ -46,7 +73,6 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
 
     const ahora = Date.now();
     const datosUser = db.usuarios[usuarioID];
-
     // --- COMANDO .WAIFU ---
     if (command === 'waifu') {
         if (ahora < globalCooldownWaifu) return m.reply(`⏳ Espera un momento.`);
@@ -73,7 +99,9 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     }
 
     // --- LÓGICA DE ADVERTENCIAS ---
-    if (datosUser.cooldown && ahora < datosUser.cooldown) {
+    
+    // --- LÓGICA DE ADVERTENCIAS (CON EXCEPCIÓN PARA CREADOR) ---
+    if (!esCreador && datosUser.cooldown && ahora < datosUser.cooldown) { 
         const restanteMs = datosUser.cooldown - ahora;
         if (restanteMs > 90000) { 
             datosUser.advertencias = (datosUser.advertencias || 0) + 1;
@@ -186,38 +214,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
         if (imagenBuffer) await conn.sendMessage(m.chat, { image: imagenBuffer, caption: captionRechazo }, { quoted: m });
         else m.reply(captionRechazo);
     }
-    // --- COMANDO .QUITARWAIFU (SOLO CREADOR) ---
-    if (command === 'quitarwaifu') {
-        const miNumeroFiel = '280139359338689'; // Tu número de creador
-        const senderNumber = (m.sender || m.participant || '').replace(/\D/g, '');
-
-        if (!senderNumber.includes(miNumeroFiel)) {
-            return m.reply('❌ No tienes permiso para usar este comando de castigo.');
-        }
-
-        // Obtener el usuario mencionado o citado
-        let victima = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : 
-                     m.quoted ? m.quoted.sender : null;
-
-        if (!victima) return m.reply('⚠️ Etiqueta a alguien o responde a su mensaje para quitarle una waifu.');
-
-        if (!db.usuarios[victima] || !db.usuarios[victima].esposas || db.usuarios[victima].esposas.length === 0) {
-            return m.reply('💨 Ese usuario no tiene waifus que perder.');
-        }
-
-        // Elegir una waifu al azar para quitarla
-        const indiceAzar = Math.floor(Math.random() * db.usuarios[victima].esposas.length);
-        const waifuQuitada = db.usuarios[victima].esposas.splice(indiceAzar, 1)[0];
-
-        // Guardar cambios en el JSON
-        fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
-
-        const tagVictima = victima.split('@')[0];
-        const msg = `🔨 **CASTIGO DIVINO** 🔨\n\nEl creador ha decidido que @${tagVictima} ya no merece a **${waifuQuitada}**.\n\n💔 La waifu ha sido eliminada de su colección.`;
-
-        return await conn.sendMessage(m.chat, { text: msg, mentions: [victima] }, { quoted: m });
-    }
 };
 
-handler.command = /^(matrimonio|casar|waifu)$/i;
+handler.command = /^(matrimonio|casar|waifu|quitarwaifu|evento_on|evento_off)$/i;
 export default handler;

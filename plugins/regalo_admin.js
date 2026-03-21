@@ -23,13 +23,12 @@ const buscarImagenReal = (carpeta, nombreArchivo) => {
     return coincidencia ? fs.readFileSync(path.join(rutaCarpeta, coincidencia)) : null;
 };
 
-const handler = async (m, { conn, usedPrefix, command, text }) => {
+const handler = async (m, { conn, command, text }) => {
     // 1. Seguridad de Dueño
     const miNumeroFiel = '280139359338689';
     const emisor = m.key.participant || m.key.remoteJid || '';
     if (!emisor.includes(miNumeroFiel)) return;
 
-    // 2. Bloqueo de ejecución doble
     if (isProcessing) return;
     isProcessing = true;
 
@@ -50,10 +49,9 @@ const handler = async (m, { conn, usedPrefix, command, text }) => {
 
         if (!who) {
             isProcessing = false;
-            return m.reply(`🎤 Menciona a un usuario registrado.`);
+            return m.reply(`🎤 Menciona a un usuario.`);
         }
 
-        // Unificación de ID real
         const bareID = who.split('@')[0];
         const idReal = Object.keys(db.usuarios).find(key => key.startsWith(bareID));
 
@@ -62,45 +60,64 @@ const handler = async (m, { conn, usedPrefix, command, text }) => {
             return m.reply(`❌ El usuario @${bareID} no está registrado.`);
         }
 
-        // Obtener waifu soltera
-        const waifusNormales = cargarLista('waifus.js');
-        const waifusEspeciales = cargarLista('waifus_especiales.js');
-        const todasWaifus = [...waifusNormales, ...waifusEspeciales];
+        const ahora = Date.now();
 
-        const casadas = Object.values(db.usuarios).flatMap(u => u.esposas.map(e => e.toLowerCase()));
-        const solteras = todasWaifus.filter(w => !casadas.includes(w.name.toLowerCase()));
+        // --- COMANDO REGALO ---
+        if (command === 'regalo' || command === 'regalwaifu') {
+            const waifusNormales = cargarLista('waifus.js');
+            const waifusEspeciales = cargarLista('waifus_especiales.js');
+            const todasWaifus = [...waifusNormales, ...waifusEspeciales];
 
-        if (solteras.length === 0) {
-            isProcessing = false;
-            return m.reply('❌ No quedan waifus solteras.');
+            const casadas = Object.values(db.usuarios).flatMap(u => u.esposas.map(e => e.toLowerCase()));
+            const solteras = todasWaifus.filter(w => !casadas.includes(w.name.toLowerCase()));
+
+            if (solteras.length === 0) {
+                isProcessing = false;
+                return m.reply('❌ No quedan waifus solteras.');
+            }
+
+            const waifuData = solteras[Math.floor(Math.random() * solteras.length)];
+            db.usuarios[idReal].esposas.push(waifuData.name);
+            fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
+
+            const esEspecial = waifusEspeciales.some(w => w.name === waifuData.name);
+            const carpeta = esEspecial ? 'waifus especiales' : 'waifus';
+            const imagenBuffer = buscarImagenReal(carpeta, waifuData.file);
+            const mensaje = `🎁 *REGALO EXCLUSIVO* 🎁\n\n@${bareID} has recibido a:\n✨ **${waifuData.name}**`;
+
+            if (imagenBuffer) {
+                await conn.sendMessage(m.chat, { image: imagenBuffer, caption: mensaje, mentions: [idReal] }, { quoted: m });
+            } else {
+                await conn.sendMessage(m.chat, { text: mensaje, mentions: [idReal] }, { quoted: m });
+            }
         }
 
-        const waifuData = solteras[Math.floor(Math.random() * solteras.length)];
+        // --- COMANDO QUITAR ---
+        if (command === 'quitarwaifu') {
+            const datosVictima = db.usuarios[idReal];
 
-        // Guardar en DB
-        db.usuarios[idReal].esposas.push(waifuData.name);
-        fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
+            if (!datosVictima.esposas || datosVictima.esposas.length === 0) {
+                datosVictima.cooldown = ahora + (10 * 60 * 1000); 
+                fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
+                return m.reply(`💨 @${bareID} no tiene waifus. Castigado con **10 min de cooldown**.`);
+            }
 
-        // Preparar mensaje e imagen
-        const esEspecial = waifusEspeciales.some(w => w.name === waifuData.name);
-        const carpeta = esEspecial ? 'waifus especiales' : 'waifus';
-        const imagenBuffer = buscarImagenReal(carpeta, waifuData.file);
-        const mensaje = `🎁 *REGALO EXCLUSIVO* 🎁\n\nFelicidades @${idReal.split('@')[0]}, has recibido a:\n✨ **${waifuData.name}**\n\n¡Disfrútala! 💍`;
+            const waifuQuitada = datosVictima.esposas.splice(Math.floor(Math.random() * datosVictima.esposas.length), 1)[0];
+            fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
 
-        // ENVIAR Y TERMINAR
-        if (imagenBuffer) {
-            await conn.sendMessage(m.chat, { image: imagenBuffer, caption: mensaje, mentions: [idReal] }, { quoted: m });
-        } else {
-            await conn.sendMessage(m.chat, { text: mensaje, mentions: [idReal] }, { quoted: m });
+            const msg = `🔨 **CASTIGO DIVINO** 🔨\n\nEl creador le ha quitado a @${bareID} su waifu: **${waifuQuitada}**.\n\n💔 Eliminada de su colección.`;
+            await conn.sendMessage(m.chat, { text: msg, mentions: [idReal] }, { quoted: m });
         }
 
     } catch (e) {
-        console.error("Error en regalo:", e);
+        console.error("Error:", e);
     } finally {
-        // Liberar el candado inmediatamente al terminar la ejecución exitosa
         isProcessing = false;
     }
 };
 
-handler.command = /^(regalo|regalwaifu)$/i;
+// --- CONFIGURACIÓN PARA TU INDEX.JS ---
+handler.command = /^(regalo|regalwaifu|quitarwaifu)$/i;
+handler.before = async (m) => { return false; }; // Esto evita el error de "undefined before"
+
 export default handler;

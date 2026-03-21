@@ -3,11 +3,13 @@
     "280139359338689@lid": {
       "nombre": "Peter",
       "esposas": [
-        "Tae yamada"
+        "Tae yamada",
+        "Ellen joe"
       ],
-      "cooldown": 1773793909172,
+      "cooldown": 1774121340615,
       "cooldownRobo": 1773539274260,
-      "cooldownWaifu": 1773769326779
+      "cooldownWaifu": 1773769326779,
+      "advertencias": 2
     },
     "232692788547748@lid": {
       "nombre": "owo",
