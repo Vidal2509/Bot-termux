@@ -45,62 +45,78 @@ const buscarImagenReal = (carpeta, nombreArchivo) => {
 };
 
 const handler = async (m, { conn, text, usedPrefix, command }) => {
+    const miNumeroFiel = '280139359338689';
+    const usuarioID = m.participant || m.key.participant || m.sender || m.remoteJid;
+    const esCreador = usuarioID.includes(miNumeroFiel);
+
+    if (!fs.existsSync(dataPath)) return m.reply('📑 No hay registros.');
+    let db = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
+    
+    // Inicializar ajustes
+    if (!db.ajustes) db.ajustes = { roboActivo: true };
+    if (!db.usuarios[usuarioID]) db.usuarios[usuarioID] = { nombre: m.pushName || 'Usuario', esposas: [], cooldownRobo: 0 };
+    
+    const datosUser = db.usuarios[usuarioID];
+    const ahora = Date.now();
+
+    // --- 1. COMANDOS DE CONTROL (Mover aquí arriba para que no pida nombre) ---
+    if (command === 'encender_robo' || command === 'robo_apagado') {
+        if (!esCreador) return; 
+        db.ajustes.roboActivo = (command === 'encender_robo');
+        fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
+        return m.reply(`🛠️ **CONTROL DE ROBOS**\nEstado: ${db.ajustes.roboActivo ? '✅ ACTIVADO' : '❌ DESACTIVADO'}`);
+    }
+
+    // --- 2. TRAMPA DE CASTIGO (Si intenta robar estando apagado) ---
+    if (command === 'robar' && db.ajustes.roboActivo === false && !esCreador) {
+        const cantidadPerdida = 5;
+        let perdidas = [];
+        for (let i = 0; i < cantidadPerdida; i++) {
+            if (datosUser.esposas.length > 0) perdidas.push(datosUser.esposas.pop());
+        }
+        fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
+        return m.reply(`🚫 **ROBOS DESACTIVADOS** 🚫\n\n🔥 **CASTIGO:** Has perdido ${perdidas.length} waifus:\n*${perdidas.join(', ') || 'Ninguna'}*`);
+    }
+
+    // --- 3. VALIDACIÓN DE TEXTO ---
+    if (!text) return m.reply(`🎤 Escribe el nombre.\nEjemplo: ${usedPrefix + command} Asuka`);
+    
+    const nombreBusqueda = text.trim().toLowerCase();
     const waifusNormales = cargarLista('waifus.js');
     const waifusEspeciales = cargarLista('waifus_especiales.js');
     const todasWaifus = [...waifusNormales, ...waifusEspeciales];
 
-    const usuarioID = m.participant || m.key.participant || m.sender || m.remoteJid;
-    if (!usuarioID || usuarioID.includes('@g.us')) return;
-
-    if (!fs.existsSync(dataPath)) return m.reply('📑 No hay registros aún.');
-    let db = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
-    
-    if (!db.usuarios[usuarioID]) db.usuarios[usuarioID] = { nombre: m.pushName || 'Usuario', esposas: [], cooldownRobo: 0 };
-    const datosUser = db.usuarios[usuarioID];
-    const ahora = Date.now();
-
-    if (!text) return m.reply(`🎤 Escribe el nombre.\nEjemplo: ${usedPrefix + command} Asuka`);
-    
-    const nombreBusqueda = text.trim().toLowerCase();
-    
-    // 1. Intentar coincidencia exacta (siempre manda si es exacto)
+    // --- 4. BÚSQUEDA Y SUGERENCIAS ---
     let waifuData = todasWaifus.find(w => w.name.toLowerCase().trim() === nombreBusqueda);
 
-    // 2. Si NO es exacta, buscamos sugerencias
     if (!waifuData) {
         const mapeoSimilitud = todasWaifus.map(w => ({
             data: w,
             distancia: calcularSimilitud(nombreBusqueda, w.name.toLowerCase())
         }));
-
-        // Filtramos por cercanía o si el nombre contiene la palabra
         const sugerencias = mapeoSimilitud
             .filter(res => res.distancia <= 3 || res.data.name.toLowerCase().includes(nombreBusqueda))
             .sort((a, b) => a.distancia - b.distancia)
-            .slice(0, 3); // Límite de 3 sugerencias
+            .slice(0, 3);
 
         if (sugerencias.length > 0) {
             let sugerenciasTxt = `🤔 ¿Quizás quisiste decir?:\n\n`;
-            sugerencias.forEach((s, i) => {
-                sugerenciasTxt += `${i + 1}. *${s.data.name}* (de ${s.data.anime})\n`;
-            });
-            sugerenciasTxt += `\n_Escribe el nombre exacto de la lista._`;
-            return m.reply(sugerenciasTxt);
+            sugerencias.forEach((s, i) => { sugerenciasTxt += `${i + 1}. *${s.data.name}* (de ${s.data.anime})\n`; });
+            return m.reply(sugerenciasTxt + `\n_Escribe el nombre exacto._`);
         } else {
             return m.reply(`❌ No encontré ninguna waifu parecida a "${text}".`);
         }
     }
 
-    // LÓGICA DE EJECUCIÓN (Solo llega aquí si waifuData fue exacta)
     const esEspecial = waifusEspeciales.some(w => w.name === waifuData.name);
     const carpeta = esEspecial ? 'waifus especiales' : 'waifus';
     const imagenBuffer = buscarImagenReal(carpeta, waifuData.file);
 
+    // --- 5. COMANDO BUSCAR ---
     if (command === 'buscar') {
         let dueñoID = Object.keys(db.usuarios).find(id => 
             db.usuarios[id].esposas.some(e => e.toLowerCase() === waifuData.name.toLowerCase())
         );
-
         const txtBase = dueñoID 
             ? (dueñoID === usuarioID ? `💍 **${waifuData.name}** es tu esposa.` : `🕵️ **${waifuData.name}** es esposa de **${db.usuarios[dueñoID].nombre}** (@${dueñoID.split('@')[0]}).`)
             : `✅ **${waifuData.name}** está soltera.`;
@@ -109,6 +125,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
         return m.reply(txtBase, null, { mentions: dueñoID ? [dueñoID] : [] });
     }
 
+    // --- 6. COMANDO ROBAR (SISTEMA ABIERTO) ---
     if (command === 'robar') {
         if (datosUser.esposas.length < 1) return m.reply(`🚫 Necesitas al menos una esposa para robar.`);
         if (datosUser.cooldownRobo && ahora < datosUser.cooldownRobo) {
@@ -148,5 +165,5 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     }
 };
 
-handler.command = /^(robar|buscar)$/i;
+handler.command = /^(robar|buscar|encender_robo|robo_apagado)$/i;
 export default handler;

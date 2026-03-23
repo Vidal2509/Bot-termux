@@ -2,18 +2,17 @@
   "usuarios": {
     "280139359338689@lid": {
       "nombre": "Peter",
-      "esposas": [
-        "Tae yamada",
-        "Ellen joe"
-      ],
+      "esposas": [],
       "cooldown": 1774121340615,
-      "cooldownRobo": 1773539274260,
+      "cooldownRobo": 1774227380398,
       "cooldownWaifu": 1773769326779,
       "advertencias": 2
     },
     "232692788547748@lid": {
       "nombre": "owo",
-      "esposas": [],
+      "esposas": [
+        "Helena"
+      ],
       "cooldown": 1773539310352
     },
     "275724317540403@lid": {
@@ -33,5 +32,8 @@
       "cooldown": 1773793926894,
       "cooldownWaifu": 0
     }
+  },
+  "ajustes": {
+    "roboActivo": true
   }
 }

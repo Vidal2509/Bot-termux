@@ -38,11 +38,17 @@ const handler = async (m, { conn, text, command }) => {
     respuesta += `*Para:* @${numero}\n`;
     respuesta += `*Resultado:* [${barra}] ${porcentaje}%\n\n`;
     
-    let rango = "";
-    if (porcentaje >= 90) rango = "🏆 Nivel: *Leyenda Definitiva*";
-    else if (porcentaje >= 70) rango = "🎖️ Nivel: *Maestro Experto*";
-    else if (porcentaje >= 40) rango = "⚡ Nivel: *Usuario Promedio*";
+   let rango = "";
+    if (porcentaje >= 100) rango = "🌌 Nivel: *Entidad Ancestral*";
+    else if (porcentaje >= 95) rango = "🏆 Nivel: *Leyenda Definitiva*";
+    else if (porcentaje >= 85) rango = "👑 Nivel: *Semidiós del Código*";
+    else if (porcentaje >= 75) rango = "🎖️ Nivel: *Maestro Experto*";
+    else if (porcentaje >= 60) rango = "⚔️ Nivel: *Guerrero de Élite*";
+    else if (porcentaje >= 50) rango = "⚡ Nivel: *Usuario Avanzado*";
+    else if (porcentaje >= 40) rango = "✨ Nivel: *Usuario Promedio*";
+    else if (porcentaje >= 25) rango = "🛡️ Nivel: *Aprendiz Constante*";
     else if (porcentaje >= 10) rango = "🌱 Nivel: *Novato*";
+    else if (porcentaje >= 1)  rango = "🥚 Nivel: *Recién Nacido*";
     else rango = "🚫 Nivel: *Inexistente*";
 
     respuesta += rango;
