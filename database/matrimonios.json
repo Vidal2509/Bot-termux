@@ -15,14 +15,12 @@
       ],
       "cooldown": 1773539310352
     },
-    "275724317540403@lid": {
-      "nombre": "Marco",
-      "esposas": [],
-      "cooldown": 1773541887280
-    },
     "123252894625848@lid": {
       "nombre": "Shadow",
-      "esposas": [],
+      "esposas": [
+        "Hatsune miku",
+        "Bot"
+      ],
       "cooldown": 0,
       "cooldownWaifu": 1773595778546
     },

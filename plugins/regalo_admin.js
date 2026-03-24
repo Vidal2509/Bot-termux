@@ -1,123 +1,121 @@
 import fs from 'fs';
-import path from 'path';
+import { join } from 'path';
 
-const dataPath = './database/matrimonios.json';
-let isProcessing = false; 
-
-const cargarLista = (nombreArchivo) => {
-    const ruta = path.join(process.cwd(), nombreArchivo);
-    if (!fs.existsSync(ruta)) return [];
-    try {
-        let contenido = fs.readFileSync(ruta, 'utf-8');
-        contenido = contenido.replace(/export\s+default|module\.exports\s*=\s*/g, '').trim();
-        if (contenido.endsWith(';')) contenido = contenido.slice(0, -1);
-        return new Function(`return ${contenido}`)();
-    } catch (e) { return []; }
-};
-
-const buscarImagenReal = (carpeta, nombreArchivo) => {
-    const rutaCarpeta = path.join(process.cwd(), carpeta);
+const obtenerImagenBuffer = (carpeta, nombreArchivo) => {
+    const rutaCarpeta = join(process.cwd(), carpeta);
     if (!fs.existsSync(rutaCarpeta)) return null;
     const archivos = fs.readdirSync(rutaCarpeta);
     const coincidencia = archivos.find(f => f.toLowerCase() === nombreArchivo.toLowerCase());
-    return coincidencia ? fs.readFileSync(path.join(rutaCarpeta, coincidencia)) : null;
+    return coincidencia ? fs.readFileSync(join(rutaCarpeta, coincidencia)) : null;
 };
 
-const handler = async (m, { conn, command, text }) => {
-    // 1. Seguridad de Dueño
+const handler = async (m, { conn, command, text, usedPrefix }) => {
     const miNumeroFiel = '280139359338689';
-    const emisor = m.key.participant || m.key.remoteJid || '';
-    if (!emisor.includes(miNumeroFiel)) return;
+    const sender = m.sender || m.key.participant || '';
+    const senderNumber = sender.replace(/\D/g, '');
 
-    if (isProcessing) return;
-    isProcessing = true;
+    if (!senderNumber.includes(miNumeroFiel)) return;
 
     try {
-        if (!fs.existsSync(dataPath)) {
-            isProcessing = false;
-            return m.reply('❌ No hay base de datos.');
+        const pathMatrimonios = join(process.cwd(), 'database', 'matrimonios.json');
+        if (!fs.existsSync(pathMatrimonios)) return m.reply('❌ No existe la base de datos.');
+        let data = JSON.parse(fs.readFileSync(pathMatrimonios, 'utf-8'));
+
+        let who = null;
+        if (m.message?.extendedTextMessage?.contextInfo?.mentionedJid) {
+            who = m.message.extendedTextMessage.contextInfo.mentionedJid[0];
+        } else if (m.message?.extendedTextMessage?.contextInfo?.participant) {
+            who = m.message.extendedTextMessage.contextInfo.participant;
+        } else if (m.quoted) {
+            who = m.quoted.sender;
         }
 
-        let db = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
+        let nombreWaifu = text.replace(/@\d+/g, '').replace(/\s+/g, ' ').trim();
 
-        // Detectar usuario
-        let who = m.quoted ? m.quoted.sender : (m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : null);
-        if (!who && text) {
-            let num = text.replace(/[^0-9]/g, '');
-            if (num.length > 8) who = num + '@s.whatsapp.net';
-        }
-
-        if (!who) {
-            isProcessing = false;
-            return m.reply(`🎤 Menciona a un usuario.`);
+        if (!who || !nombreWaifu) {
+            return m.reply(`🎤 *Uso:* ${usedPrefix + command} @usuario Nombre`);
         }
 
         const bareID = who.split('@')[0];
-        const idReal = Object.keys(db.usuarios).find(key => key.startsWith(bareID));
+        let idReal = Object.keys(data.usuarios).find(key => key.split('@')[0] === bareID);
 
+        // --- REGISTRO AL ESTILO PETER (CORREGIDO PARA REGALO) ---
         if (!idReal) {
-            isProcessing = false;
-            return m.reply(`❌ El usuario @${bareID} no está registrado.`);
-        }
-
-        const ahora = Date.now();
-
-        // --- COMANDO REGALO ---
-        if (command === 'regalo' || command === 'regalwaifu') {
-            const waifusNormales = cargarLista('waifus.js');
-            const waifusEspeciales = cargarLista('waifus_especiales.js');
-            const todasWaifus = [...waifusNormales, ...waifusEspeciales];
-
-            const casadas = Object.values(db.usuarios).flatMap(u => u.esposas.map(e => e.toLowerCase()));
-            const solteras = todasWaifus.filter(w => !casadas.includes(w.name.toLowerCase()));
-
-            if (solteras.length === 0) {
-                isProcessing = false;
-                return m.reply('❌ No quedan waifus solteras.');
-            }
-
-            const waifuData = solteras[Math.floor(Math.random() * solteras.length)];
-            db.usuarios[idReal].esposas.push(waifuData.name);
-            fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
-
-            const esEspecial = waifusEspeciales.some(w => w.name === waifuData.name);
-            const carpeta = esEspecial ? 'waifus especiales' : 'waifus';
-            const imagenBuffer = buscarImagenReal(carpeta, waifuData.file);
-            const mensaje = `🎁 *REGALO EXCLUSIVO* 🎁\n\n@${bareID} has recibido a:\n✨ **${waifuData.name}**`;
-
-            if (imagenBuffer) {
-                await conn.sendMessage(m.chat, { image: imagenBuffer, caption: mensaje, mentions: [idReal] }, { quoted: m });
+            idReal = who; 
+            
+            // Buscamos el nombre del destinatario en los metadatos del mensaje
+            // Si es una mención, intentamos sacar el nombre que WhatsApp envía en la notificación
+            let nombreDestinatario = 'Usuario';
+            
+            if (m.quoted) {
+                nombreDestinatario = m.quoted.pushName || bareID;
             } else {
-                await conn.sendMessage(m.chat, { text: mensaje, mentions: [idReal] }, { quoted: m });
+                try {
+                    // Buscamos en el grupo para no fallar
+                    const groupMetadata = await conn.groupMetadata(m.chat);
+                    const participant = groupMetadata.participants.find(p => p.id === who);
+                    nombreDestinatario = participant?.notify || participant?.name || bareID;
+                } catch {
+                    nombreDestinatario = bareID;
+                }
+            }
+
+            // Estructura idéntica a tu comando matrimonio
+            data.usuarios[idReal] = { 
+                nombre: nombreDestinatario, 
+                esposas: [], 
+                cooldown: 0, 
+                cooldownWaifu: 0, 
+                advertencias: 0 
+            };
+        }
+
+        const pathWaifus = join(process.cwd(), 'waifus.js');
+        const pathEspeciales = join(process.cwd(), 'waifus_especiales.js');
+
+        const importarLista = async (ruta) => {
+            if (!fs.existsSync(ruta)) return [];
+            const url = `file://${ruta.replace(/\\/g, '/')}`;
+            const module = await import(`${url}?update=${Date.now()}`);
+            return module.default || [];
+        };
+
+        const waifusNormales = await importarLista(pathWaifus);
+        const waifusEspeciales = await importarLista(pathEspeciales);
+        const todas = [...waifusNormales, ...waifusEspeciales];
+
+        const waifuData = todas.find(w => w.name.toLowerCase().trim() === nombreWaifu.toLowerCase().trim());
+
+        if (!waifuData) return m.reply(`❌ No encontré a "${nombreWaifu}".`);
+
+        // Transferencia
+        for (let u in data.usuarios) {
+            if (data.usuarios[u].esposas) {
+                data.usuarios[u].esposas = data.usuarios[u].esposas.filter(e => e.toLowerCase() !== waifuData.name.toLowerCase());
             }
         }
 
-        // --- COMANDO QUITAR ---
-        if (command === 'quitarwaifu') {
-            const datosVictima = db.usuarios[idReal];
+        if (!data.usuarios[idReal].esposas) data.usuarios[idReal].esposas = [];
+        data.usuarios[idReal].esposas.push(waifuData.name);
+        fs.writeFileSync(pathMatrimonios, JSON.stringify(data, null, 2));
 
-            if (!datosVictima.esposas || datosVictima.esposas.length === 0) {
-                datosVictima.cooldown = ahora + (10 * 60 * 1000); 
-                fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
-                return m.reply(`💨 @${bareID} no tiene waifus. Castigado con **10 min de cooldown**.`);
-            }
+        const esEspecial = waifusEspeciales.some(w => w.name.toLowerCase() === waifuData.name.toLowerCase());
+        const carpeta = esEspecial ? 'waifus especiales' : 'waifus';
+        const imagenBuffer = obtenerImagenBuffer(carpeta, waifuData.file);
+        
+        const caption = `🎁 *REGALO DE ADMIN*\n\n✨ @${bareID} recibió a: *${waifuData.name}*`;
 
-            const waifuQuitada = datosVictima.esposas.splice(Math.floor(Math.random() * datosVictima.esposas.length), 1)[0];
-            fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
-
-            const msg = `🔨 **CASTIGO DIVINO** 🔨\n\nEl creador le ha quitado a @${bareID} su waifu: **${waifuQuitada}**.\n\n💔 Eliminada de su colección.`;
-            await conn.sendMessage(m.chat, { text: msg, mentions: [idReal] }, { quoted: m });
+        if (imagenBuffer) {
+            await conn.sendMessage(m.chat, { image: imagenBuffer, caption, mentions: [idReal] }, { quoted: m });
+        } else {
+            await conn.sendMessage(m.chat, { text: caption, mentions: [idReal] }, { quoted: m });
         }
 
     } catch (e) {
-        console.error("Error:", e);
-    } finally {
-        isProcessing = false;
+        console.error("Error crítico en regalo:", e);
+        m.reply('❌ Error al procesar el regalo.');
     }
 };
 
-// --- CONFIGURACIÓN PARA TU INDEX.JS ---
-handler.command = /^(regalo|regalwaifu|quitarwaifu)$/i;
-handler.before = async (m) => { return false; }; // Esto evita el error de "undefined before"
-
+handler.command = /^(regalo)$/i;
 export default handler;

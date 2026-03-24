@@ -1,4 +1,4 @@
-   module.exports = [
+   export default [
     { name: 'Rem demonio', file: 'rem demonio.jpg', anime: 'Re zero' },
     { name: 'Ainz ooal gown', file: 'ainz ooal gown.jpg', anime: 'Overlord' },
     { name: 'Goblin slayer', file: 'goblin slayer.jpg', anime: 'Goblin slayer' },
