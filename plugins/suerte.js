@@ -13,57 +13,56 @@ const handler = async (m, { conn, usedPrefix, command }) => {
         
         if (!historialSuerte[m.chat]) historialSuerte[m.chat] = [];
 
-        // Filtramos para buscar gente que no haya salido recientemente
         let disponibles = participants.filter(u => !historialSuerte[m.chat].includes(u));
         
-        // Si ya casi todos salieron, reiniciamos la memoria
         if (disponibles.length < 2) {
             historialSuerte[m.chat] = [];
             disponibles = participants;
         }
 
-        // Mezclamos y elegimos a la "víctima" al azar
         let randomUsers = disponibles.sort(() => 0.5 - Math.random());
-        let u1 = randomUsers[0]; // Usuario aleatorio del grupo
+        let u1 = randomUsers[0]; 
 
-        // Guardamos en el historial para la rotación
         historialSuerte[m.chat].push(u1);
 
-        const frases = [
-            // Predicciones que involucran a otro usuario
-             "🔮 @[user] te debe unas papas y no te las va a pagar.",
-        "🔮 @[user] te va a invitar una coca bien fría mañana.",
-        "🔮 El destino dice: @[user] es tu alma gemela en secreto.",
-        "🔮 @[user] se va a besar contigo detras de la plaza .",
-        "🔮 La cola de @[user] es tuya ahora.",
-        "🔮 ¡Cuidado! @[user] te está vigilando mientras duermes. 👁️👄👁️",
-        "🔮 Tu próxima waifu será idéntica a @[user].",
-        "🔮 @[user] se va a vestir de femboy solo para ti.",
-        "🔮 @[user] esta debajo de tu cama esperando a que te duermas.",
-        "🔮 @[user] te esta invitando a ir al monte.",
-        "🔮 @[user] te va a dar una de sus tangas.",
-        "🔮 @[user] tiene camaras en tu casa .",
+        // --- LÓGICA DE PROBABILIDAD (2%) ---
+        let frase = "";
+        const suerteAdmin = Math.floor(Math.random() * 100) + 1; // Número del 1 al 100
 
-            
-            // Predicciones individuales (para quien usa el comando)
-            "🔮 Hoy te vas a encontrar un billete de 100 en el pantalón.",
-        "🔮 Tu suerte es tan mala que hoy hasta el wifi se va a burlar de ti.",
-        "🔮 El horóscopo dice: Hoy es un buen día para no bañarte.",
-        "🔮 Te va a ir muy bien, pero solo si no sales de tu cama.",
-        "🔮 Bañate cochino.",
-        "🔮 Mejor ven y prueba tu suerte en mi cama",
-        "🔮 Hoy te violara un negro.",
-        "🔮 Hoy te van a dar como cajon que no cierra.",
-        "🔮 El horóscopo dice: Es probable que te conviertas en admin.",
-        "🔮 Peter te tiene que dar un premio pideselo.",
-        "🔮 Enrique te va a dar unas buenas chupadas de pinga.",
-        "🔮 Un femboy llegara a tu vida.",
-        ];
-
-        let frase = frases[Math.floor(Math.random() * frases.length)];
+        if (suerteAdmin <= 2) {
+            // Este es el 2% de probabilidad
+            frase = "🔮 Peter te tiene que dar un premio pideselo.";
+        } else {
+            // El otro 98% de las veces elige una de estas
+            const frasesComunes = [
+                "🔮 @[user] te debe unas papas y no te las va a pagar.",
+                "🔮 @[user] te va a invitar una coca bien fría mañana.",
+                "🔮 El destino dice: @[user] es tu alma gemela en secreto.",
+                "🔮 @[user] se va a besar contigo detras de la plaza .",
+                "🔮 La cola de @[user] es tuya ahora.",
+                "🔮 ¡Cuidado! @[user] te está vigilando mientras duermes. 👁️👄👁️",
+                "🔮 Tu próxima waifu será idéntica a @[user].",
+                "🔮 @[user] se va a vestir de femboy solo para ti.",
+                "🔮 @[user] esta debajo de tu cama esperando a que te duermas.",
+                "🔮 @[user] te esta invitando a ir al monte.",
+                "🔮 @[user] te va a dar una de sus tangas.",
+                "🔮 @[user] tiene camaras en tu casa .",
+                "🔮 Hoy te vas a encontrar un billete de 100 en el pantalón.",
+                "🔮 Tu suerte es tan mala que hoy hasta el wifi se va a burlar de ti.",
+                "🔮 El horóscopo dice: Hoy es un buen día para no bañarte.",
+                "🔮 Te va a ir muy bien, pero solo si no sales de tu cama.",
+                "🔮 Bañate cochino.",
+                "🔮 Mejor ven y prueba tu suerte en mi cama",
+                "🔮 Hoy te violara un negro.",
+                "🔮 Hoy te van a dar como cajon que no cierra.",
+                "🔮 El horóscopo dice: Es probable que te conviertas en admin.",
+                "🔮 Enrique te va a dar unas buenas chupadas de pinga.",
+                "🔮 Un femboy llegara a tu vida."
+            ];
+            frase = frasesComunes[Math.floor(Math.random() * frasesComunes.length)];
+        }
         
-        // Reemplazamos @[user] por la mención del usuario aleatorio
-        // Si la frase no tiene @[user], simplemente se envía la frase individual
+        // Reemplazamos menciones
         let textoFinal = frase.replace('@[user]', `@${u1.split('@')[0]}`);
 
         await conn.sendMessage(m.chat, { 

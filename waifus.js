@@ -1591,6 +1591,20 @@
 { name: 'Ririka Chiyoda', file: 'Ririka Chiyoda.jpg', anime: 'Megami no cafe Terrace' },
 
 
-
-    
+{ name: 'Esdeath', file: 'Esdeath.jpg', anime: 'Akame ga Kill' },
+{ name: 'Sheele', file: 'Sheele.jpg', anime: 'Akame ga Kill' },
+{ name: 'Akame', file: 'Akame.jpg', anime: 'Akame ga Kill' },
+{ name: 'Najenda', file: 'Najenda.jpg', anime: 'Akame ga Kill' },
+{ name: 'Mine', file: 'Mine.jpg', anime: 'Akame ga Kill' },
+{ name: 'Chelsea', file: 'Chelsea.jpg', anime: 'Akame ga Kill' },
+{ name: 'Tatsumi', file: 'Tatsumi.jpg', anime: 'Akame ga Kill' },
+{ name: 'Leone', file: 'Leone.jpg', anime: 'Akame ga Kill' },
+{ name: 'Susanoo', file: 'Susanoo.jpg', anime: 'Akame ga Kill' },
+{ name: 'Lubbock', file: 'Lubbock.jpg', anime: 'Akame ga Kill' },
+{ name: 'Kurome', file: 'Kurome.jpg', anime: 'Akame ga Kill' },
+{ name: 'Seryuu Ubiquitous', file: 'Seryuu Ubiquitous.jpg', anime: 'Akame ga Kill' },
+{ name: 'Mez', file: 'Mez.jpg', anime: 'Akame ga Kill' },
+{ name: 'Nyau', file: 'Nyau.jpg', anime: 'Akame ga Kill' },
+{ name: 'Spear', file: 'Spear.jpg', anime: 'Akame ga Kill' },
+{ name: 'Remus', file: 'Remus.jpg', anime: 'Akame ga Kill' },    
     ];
