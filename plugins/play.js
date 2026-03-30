@@ -63,6 +63,12 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     console.error("Error General:", e)
     m.reply("❌ Hubo un fallo en el servidor de búsqueda.")
   }
+  try {
+    await conn.sendMessage(m.chat, { audio: buffer, mimetype: 'audio/mpeg' }, { quoted: m });
+} catch (err) {
+    console.error("Error al subir media:", err);
+    m.reply("❌ Hubo un fallo al subir el audio a WhatsApp, intenta de nuevo.");
+}
 }
 
 handler.command = /^(play|mp3|audio)$/i

@@ -1606,5 +1606,14 @@
 { name: 'Mez', file: 'Mez.jpg', anime: 'Akame ga Kill' },
 { name: 'Nyau', file: 'Nyau.jpg', anime: 'Akame ga Kill' },
 { name: 'Spear', file: 'Spear.jpg', anime: 'Akame ga Kill' },
-{ name: 'Remus', file: 'Remus.jpg', anime: 'Akame ga Kill' },    
+{ name: 'Remus', file: 'Remus.jpg', anime: 'Akame ga Kill' }, 
+
+
+{ name: 'Kaname Arisugawa', file: 'Kaname Arisugawa.jpg', anime: 'Tonikaku Kawaii' },
+{ name: 'Aya Arisugawa', file: 'Aya Arisugawa.jpg', anime: 'Tonikaku Kawaii' },
+{ name: 'Tsukasa Tsukuyomi', file: 'Tsukasa Tsukuyomi.jpg', anime: 'Tonikaku Kawaii' },
+{ name: 'Chitose Kaginoji', file: 'Chitose Kaginoji.jpg', anime: 'Tonikaku Kawaii' },
+{ name: 'Aurora TK', file: 'Aurora TK.jpg', anime: 'Tonikaku Kawaii' },
+{ name: 'Charlotte TK', file: 'Charlotte TK.jpg', anime: 'Tonikaku Kawaii' },
+{ name: 'Nasa Yuzaki', file: 'Nasa Yuzaki.jpg', anime: 'Tonikaku Kawaii' },
     ];
