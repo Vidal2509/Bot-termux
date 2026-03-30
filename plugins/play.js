@@ -11,64 +11,65 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     const isUrl = text.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
 
     if (isUrl) {
-        // Si es un link, armamos el objeto vid manualmente
         vid = { 
             url: isUrl[0], 
             title: 'Audio de YouTube', 
-            seconds: 0 // Omitimos el check de tiempo para links o puedes usar otra librería
+            seconds: 0 
         };
     } else {
-        // Si no es link, buscamos normalmente
         const search = await yts(text);
         vid = search.videos[0];
     }
 
     if (!vid) return m.reply("❌ No se encontró el video");
 
-    // 2. Preparar archivos
+    // 2. Preparar carpeta temporal
     if (!fs.existsSync('./tmp')) fs.mkdirSync('./tmp')
     const fileName = `./tmp/${Date.now()}.mp3`
 
-    // 3. Lógica de comando para Termux/Windows
-    // Usamos --no-check-certificate para evitar errores de fecha en Termux
+    // 3. Configuración de comando
     const ytDlp = os.platform() === "win32" ? "python -m yt_dlp" : "yt-dlp"
     const comando = `${ytDlp} --no-check-certificate -x --audio-format mp3 --audio-quality 0 -o "${fileName}" ${vid.url}`
+
+    // Informar que se está procesando
+    await m.reply(`⏳ Procesando audio: *${vid.title}*...`)
 
     exec(comando, async (err, stdout, stderr) => {
       if (err) {
         console.error("Error de yt-dlp:", stderr)
-        return m.reply("❌ Error al procesar el audio. Asegúrate de tener ffmpeg instalado.")
+        return m.reply("❌ Error al procesar el audio. Verifica que yt-dlp y ffmpeg funcionen en tu Termux.")
       }
 
       if (!fs.existsSync(fileName)) {
           return m.reply("❌ El archivo no se generó correctamente.")
       }
 
-      // 4. Enviar el audio
-      await conn.sendMessage(m.chat, {
-        audio: fs.readFileSync(fileName),
-        mimetype: 'audio/mpeg',
-        fileName: `${vid.title}.mp3`
-      }, { quoted: m })
-
-      // 5. Limpiar archivo temporal
+      // 4. ENVIAR EL AUDIO CON PROTECCIÓN DE SUBIDA
       try {
-          fs.unlinkSync(fileName)
-      } catch (e) {
-          console.log("Error al borrar temporal:", e)
+          await conn.sendMessage(m.chat, {
+            audio: { url: fileName }, // Pasamos la ruta, es más ligero para la RAM que leer el buffer
+            mimetype: 'audio/mpeg',
+            fileName: `${vid.title}.mp3`
+          }, { quoted: m })
+      } catch (err) {
+          console.error("Error al subir media a WhatsApp:", err)
+          m.reply("❌ WhatsApp rechazó el archivo. Esto ocurre a veces por la conexión de Termux. Intenta de nuevo.")
       }
+
+      // 5. Limpiar archivo temporal (con pequeño retraso para asegurar que se envió)
+      setTimeout(() => {
+          try {
+              if (fs.existsSync(fileName)) fs.unlinkSync(fileName)
+          } catch (e) {
+              console.log("Error al borrar temporal:", e)
+          }
+      }, 5000)
     })
 
   } catch (e) {
     console.error("Error General:", e)
     m.reply("❌ Hubo un fallo en el servidor de búsqueda.")
   }
-  try {
-    await conn.sendMessage(m.chat, { audio: buffer, mimetype: 'audio/mpeg' }, { quoted: m });
-} catch (err) {
-    console.error("Error al subir media:", err);
-    m.reply("❌ Hubo un fallo al subir el audio a WhatsApp, intenta de nuevo.");
-}
 }
 
 handler.command = /^(play|mp3|audio)$/i
