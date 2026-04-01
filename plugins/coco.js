@@ -5,28 +5,32 @@ const handler = async (m, { conn }) => {
     const pathMatrimonios = join(process.cwd(), 'database', 'matrimonios.json');
     if (!fs.existsSync(pathMatrimonios)) return m.reply('❌ No existe la base de datos.');
 
+    // FUNCIÓN DE SEGURIDAD PARA EVITAR EL ERROR DE SPLIT
+    const safeSplit = (str) => {
+        if (!str || typeof str !== 'string') return '';
+        return str.split('@')[0];
+    };
+
     try {
         let data = JSON.parse(fs.readFileSync(pathMatrimonios, 'utf-8'));
         const ahora = Date.now();
         const tiempoCooldown = 5 * 60 * 1000; 
 
-        // --- PROTECCIÓN LÍNEA 14 (SENDER) ---
+        // 1. Identificar al emisor con seguridad
         const sender = m.sender || m.key?.participant || '';
-        if (!sender) return; // Si no hay sender, ignoramos para evitar el crash
-
-        const bareSender = sender.split('@')[0];
-        let idEmisor = Object.keys(data.usuarios).find(key => key && key.split('@')[0] === bareSender);
+        const bareSender = safeSplit(sender);
         
-        if (!idEmisor) return m.reply('❌ No estás registrado en el sistema de matrimonios.');
+        if (!bareSender) return; // Evita crasheos si el sender es nulo
+
+        let idEmisor = Object.keys(data.usuarios).find(key => safeSplit(key) === bareSender);
+        if (!idEmisor) return m.reply('❌ No estás registrado en el sistema.');
 
         // 2. Detectar objetivo
         let who = m.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0] || (m.quoted ? m.quoted.sender : null);
         if (!who) return m.reply(`🥥 *Etiqueta a alguien!*`);
 
-        // 3. Verificar si la VÍCTIMA existe en la DB
-        const bareVictima = who.split('@')[0];
-        let idRealVictima = Object.keys(data.usuarios).find(key => key && key.split('@')[0] === bareVictima);
-        
+        const bareVictima = safeSplit(who);
+        let idRealVictima = Object.keys(data.usuarios).find(key => safeSplit(key) === bareVictima);
         if (!idRealVictima) return m.reply('❌ Esa persona no está registrada.');
 
         // 4. Validación de Cooldown
@@ -47,13 +51,13 @@ const handler = async (m, { conn }) => {
 
         // ===== LÓGICA DE EVENTOS =====
         if (azar <= 5) {
-            const quitadas = quitarWaifus(data, victima, 10);
-            mensaje = `🥇 ¡COCO DORADO! @${victima.split('@')[0]} recibió un impacto crítico.`;
+            const quitadas = quitarWaifus(data, victima, 10, safeSplit);
+            mensaje = `🥇 ¡COCO DORADO! @${safeSplit(victima)} recibió un impacto crítico.`;
             infoWaifus = quitadas.length > 0 ? `\n💔 *Perdió 10 waifus:* ${quitadas.join(', ')}` : `\n🤕 No tenía waifus.`;
         }
         else if (azar <= 12) {
-            const quitadas = quitarWaifus(data, victima, 9999);
-            mensaje = `💣 ¡COCO BOMBA! @${victima.split('@')[0]} perdió todo.`;
+            const quitadas = quitarWaifus(data, victima, 9999, safeSplit);
+            mensaje = `💣 ¡COCO BOMBA! @${safeSplit(victima)} perdió todo.`;
             infoWaifus = quitadas.length > 0 ? `\n💀 *Perdió TODAS:* ${quitadas.join(', ')}` : `\n💨 Sin waifus que perder.`;
         }
         else if (azar <= 22) {
@@ -66,13 +70,13 @@ const handler = async (m, { conn }) => {
         }
         else if (azar <= 60) {
             victima = m.sender;
-            const quitadas = quitarWaifus(data, victima, 3);
-            mensaje = `🔙 ¡Rebotó! Te diste a ti mismo @${victima.split('@')[0]}`;
+            const quitadas = quitarWaifus(data, victima, 3, safeSplit);
+            mensaje = `🔙 ¡Rebotó! Te diste a ti mismo @${safeSplit(victima)}`;
             infoWaifus = quitadas.length > 0 ? `\n💔 *Perdiste 3:* ${quitadas.join(', ')}` : `\n🤕 Sin waifus.`;
         }
         else {
-            const quitadas = quitarWaifus(data, victima, 3);
-            mensaje = `🎯 ¡Directo en la cabeza de @${victima.split('@')[0]}!`;
+            const quitadas = quitarWaifus(data, victima, 3, safeSplit);
+            mensaje = `🎯 ¡Directo en la cabeza de @${safeSplit(victima)}!`;
             infoWaifus = quitadas.length > 0 ? `\n💔 *Perdió 3:* ${quitadas.join(', ')}` : `\n🤕 Sin waifus.`;
         }
 
@@ -84,10 +88,10 @@ const handler = async (m, { conn }) => {
     }
 };
 
-function quitarWaifus(data, victima, cantidad) {
+function quitarWaifus(data, victima, cantidad, safeSplit) {
     if (!victima) return [];
-    const bareVictima = victima.split('@')[0];
-    let idRealVictima = Object.keys(data.usuarios).find(key => key && key.split('@')[0] === bareVictima);
+    const bareVictima = safeSplit(victima);
+    let idRealVictima = Object.keys(data.usuarios).find(key => safeSplit(key) === bareVictima);
     let nombresQuitados = [];
 
     if (idRealVictima && data.usuarios[idRealVictima].esposas?.length > 0) {
