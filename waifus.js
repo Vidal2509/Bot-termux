@@ -254,6 +254,7 @@
     { name: 'Alexis', file: 'Alexis.jpg', anime: 'Ninguno',suerteLevel: "plata" },
     { name: 'Laind', file: 'Laind.jpg', anime: 'Ninguno' },
     { name: 'Peter', file: 'Peter.jpg', anime: 'Ninguno',suerteLevel: "oro" },
+    { name: 'Meica', file: 'Meica.jpg', anime: 'Ninguno',suerteLevel: "oro" },
     { name: 'Owo', file: 'Owo.jpg', anime: 'Ninguno',suerteLevel: "plata" },
 
     { name: 'Yuki sou', file: 'yuki sou.jpg', anime: 'Tokidoki bosotto Russia-go de dereru tonari no Alya-san',suerteLevel: "plata" },
