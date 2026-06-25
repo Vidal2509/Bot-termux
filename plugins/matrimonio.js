@@ -145,64 +145,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
         datosUser.esposas.push(waifuData.name); 
         datosUser.cooldown = ahora + (5 * 60 * 1000);
         global.contadorMatrimonios++; 
-
-        // --- EVENTO "EL BOT ESTÁ MOLESTO" (PROBABILIDAD 50/50) ---
-        if (global.contadorMatrimonios >= 3) {
-            global.contadorMatrimonios = 0; 
-            
-            if (!global.historialVictimas) global.historialVictimas = [];
-
-            let usuariosConWaifus = Object.keys(db.usuarios).filter(id => 
-                db.usuarios[id].esposas.length > 0 && 
-                !global.historialVictimas.includes(id)
-            );
-
-            if (usuariosConWaifus.length < 2) {
-                global.historialVictimas = [];
-                usuariosConWaifus = Object.keys(db.usuarios).filter(id => db.usuarios[id].esposas.length > 0);
-            }
-            
-            // Decidir tipo de evento (50% cada uno)
-            const esBombaNuclear = Math.random() < 0.5;
-            const cantidadAQuitar = esBombaNuclear ? 3 : 2;
-            
-            let textoEvento = esBombaNuclear 
-                ? `☢️ **¡¡BOMBA NUCLEAR DETONADA!!** ☢️\n¡El Rei Chiquita ha perdido el control total!\n\n`
-                : `💢 **Rei Chiquita ESTÁ MOLESTA** 💢\nDemasiados matrimonios... ¡He decidido sembrar el caos!\n\n`;
-            
-            let victimasTags = [];
-            let nuevasVictimas = [];
-
-            if (usuariosConWaifus.length > 0) {
-                const shuffled = usuariosConWaifus.sort(() => 0.5 - Math.random());
-                const elegidos = shuffled.slice(0, 2);
                 
-                elegidos.forEach(id => {
-                    let perdidas = [];
-                    for (let i = 0; i < cantidadAQuitar; i++) {
-                        if (db.usuarios[id].esposas.length > 0) {
-                            perdidas.push(db.usuarios[id].esposas.pop());
-                        }
-                    }
-                    
-                    if (perdidas.length > 0) {
-                        textoEvento += `💔 A @${id.split('@')[0]} le quité ${perdidas.length} waifus: **${perdidas.join(', ')}**\n`;
-                        victimasTags.push(id);
-                        nuevasVictimas.push(id);
-                    }
-                });
-
-                global.historialVictimas = nuevasVictimas;
-            } else {
-                textoEvento += `Iba a lanzar la bomba, pero nadie tiene waifus... Suerte para la próxima.`;
-            }
-
-            fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
-            await conn.sendMessage(m.chat, { text: textoEvento, mentions: victimasTags }, { quoted: m });
-        } else {
-            fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
-        }
-        
         const caption = `💍 ¡ACEPTÓ! **${waifuData.name}** es ahora tu esposa.`;
         if (imagenBuffer) await conn.sendMessage(m.chat, { image: imagenBuffer, caption, mentions: [usuarioID] }, { quoted: m });
         else m.reply(caption);

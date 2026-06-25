@@ -2,10 +2,51 @@
   "usuarios": {
     "280139359338689@lid": {
       "nombre": "Peter",
-      "esposas": [],
-      "cooldown": 1774121340615,
-      "cooldownRobo": 1774227380398,
-      "cooldownWaifu": 1773769326779,
+      "esposas": [
+        "Dina Fritz",
+        "Lifa",
+        "Yuri Nakamura",
+        "Ellen joe",
+        "Kou Seia",
+        "Sylfie",
+        "Vexana",
+        "Qiqi",
+        "Norfolk",
+        "Peter",
+        "Indianapolis",
+        "Maki",
+        "Sorasaki hina",
+        "Annie",
+        "Mem-cho",
+        "Yugiri",
+        "Chongyun",
+        "Chieru",
+        "Benedetta",
+        "Eris",
+        "Yui Yuigahama",
+        "Emma",
+        "Layla gi",
+        "Misono mika",
+        "Frieda Reiss",
+        "Plana Chan",
+        "Miia",
+        "Suzume",
+        "Mayoi shigure",
+        "Momo Hanakai",
+        "Iruma Suzuki",
+        "Komakaze Rabu",
+        "Nekomiya",
+        "Belle",
+        "Alice Thymefield",
+        "Kazekura moe",
+        "Isami kaede",
+        "Koleda belobog",
+        "Takina inoue",
+        "Mako mankashoku"
+      ],
+      "cooldown": 1782096259969,
+      "cooldownRobo": 1782095151100,
+      "cooldownWaifu": 1782094811943,
       "advertencias": 2,
       "cooldownCoco": 1774579968966
     },
@@ -17,14 +58,448 @@
     "123252894625848@lid": {
       "nombre": "Shadow",
       "esposas": [],
-      "cooldown": 0,
-      "cooldownWaifu": 1773595778546
+      "cooldown": 1780111002807,
+      "cooldownWaifu": 1773595778546,
+      "advertencias": 1,
+      "cooldownCoco": 1779678355080
     },
     "99196732481765@lid": {
       "nombre": "Enrique",
+      "esposas": [
+        "Bot",
+        "Kita",
+        "Qingyi",
+        "Kasane Teto",
+        "Kasli",
+        "Meisho Doto",
+        "Kula diamont",
+        "Haruka kotoura",
+        "Otori Emu",
+        "Hu tao",
+        "Kokomi",
+        "Pandora",
+        "Noint",
+        "Izuna kuda",
+        "Elma"
+      ],
+      "cooldown": 1782096099138,
+      "cooldownWaifu": 1782096066446,
+      "cooldownRobo": 1782095607548,
+      "cooldownCoco": 1779986148797,
+      "advertencias": 0
+    },
+    "226254817120452@lid": {
+      "nombre": "Mambo",
       "esposas": [],
-      "cooldown": 1773793926894,
-      "cooldownWaifu": 0
+      "cooldown": 1781838835150,
+      "cooldownWaifu": 0,
+      "advertencias": 0
+    },
+    "129652714692727@lid": {
+      "nombre": "vanished🌕 (댐 샘)",
+      "esposas": [
+        "Mamoru chiba",
+        "Sheffy",
+        "Kasumi miwa",
+        "Kousagi Tsukino",
+        "Chibiusa",
+        "Black Lady",
+        "Sailor Jupiter"
+      ],
+      "cooldown": 1781838645929,
+      "cooldownWaifu": 0,
+      "advertencias": 0,
+      "cooldownRobo": 1779928169005,
+      "cooldownCoco": 1779986092622
+    },
+    "275724317540403@lid": {
+      "nombre": "Marco",
+      "esposas": [
+        "Zhu yuan",
+        "Akeno Himejima",
+        "Niko hirata",
+        "Ram",
+        "Satella",
+        "Cesar king",
+        "Xuelan",
+        "Usada Pecora",
+        "Selena",
+        "Momo Yaoyorozu",
+        "Nanaka",
+        "Esdeath"
+      ],
+      "cooldown": 1782095551526,
+      "cooldownWaifu": 0,
+      "advertencias": 0,
+      "cooldownCoco": 1779763596597
+    },
+    "252312769556550@lid": {
+      "nombre": "꧁•|⁠✧takahashi ✧⁠|•꧂",
+      "esposas": [
+        "Yuka makoto",
+        "Laind",
+        "Jinx",
+        "Hugo",
+        "Davet",
+        "Ligther",
+        "Seth lowell",
+        "Saki saki",
+        "Irie",
+        "Kagamine len",
+        "Kamishiro Rui",
+        "Shanks",
+        "Shinonome Akito",
+        "Venti"
+      ],
+      "cooldown": 1782096087682,
+      "cooldownWaifu": 1782096134235,
+      "advertencias": 2
+    },
+    "45200906973239@lid": {
+      "nombre": "𓂀卐マンジMini patoマンジ卐𓂀",
+      "esposas": [
+        "Yixuan",
+        "Gold ship",
+        "Vanessa",
+        "Angel",
+        "Jane doe",
+        "Odori",
+        "Cerebella",
+        "Filia",
+        "Akeshiro rumi",
+        "Parasoul"
+      ],
+      "cooldown": 1782096014067,
+      "cooldownWaifu": 1782095346296,
+      "advertencias": 2,
+      "cooldownCoco": 1779985136381
+    },
+    "73517659910231@lid": {
+      "nombre": "K",
+      "esposas": [],
+      "cooldown": 1782095049327,
+      "cooldownWaifu": 1782094901653,
+      "advertencias": 2,
+      "cooldownCoco": 1779985309715
+    },
+    "11832819499020@lid": {
+      "nombre": "¡..F..Machan..Tachyon..!",
+      "esposas": [
+        "Furina",
+        "Hinata",
+        "Miyabi"
+      ],
+      "cooldown": 1782096268822,
+      "cooldownWaifu": 1782096177161,
+      "advertencias": 2,
+      "cooldownRobo": 1782096380085
+    },
+    "170239702646883@lid": {
+      "nombre": "Savaservi",
+      "esposas": [
+        "Shea"
+      ],
+      "cooldown": 1781490027359,
+      "cooldownWaifu": 1780881403246,
+      "advertencias": 0,
+      "cooldownRobo": 1780265441058
+    },
+    "197947190972589@lid": {
+      "nombre": "Danny",
+      "esposas": [],
+      "cooldown": 1780882332462,
+      "cooldownWaifu": 0,
+      "advertencias": 0
+    },
+    "147691292102782@lid": {
+      "nombre": "✏️Mint P",
+      "esposas": [
+        "Kaoruku waguri"
+      ],
+      "cooldown": 1782096158396,
+      "cooldownWaifu": 1782095932122,
+      "advertencias": 0
+    },
+    "39046235558088@lid": {
+      "nombre": "Yeshua",
+      "esposas": [],
+      "cooldown": 1780111031568,
+      "cooldownWaifu": 1780691876458,
+      "advertencias": 0
+    },
+    "53876774424660@lid": {
+      "nombre": "Ricardo",
+      "esposas": [],
+      "cooldown": 1781838636790,
+      "cooldownWaifu": 0,
+      "advertencias": 2
+    },
+    "191577066618909@lid": {
+      "nombre": "𝘈𝘓𝘌𝘟𝘐𝘚 𝘓𝘈𝘕𝘎𝘓𝘌𝘠",
+      "esposas": [
+        "Yukong",
+        "Asuka langley",
+        "Nino nakano",
+        "Natsuki",
+        "Wanibuchi akari",
+        "Rem",
+        "Iroha Sakayori",
+        "Azazel (High School DxD)",
+        "Manchester",
+        "Ningguang",
+        "Rei ayanami",
+        "Mine",
+        "Chasca",
+        "Kaguya",
+        "Akita Neru",
+        "Aurora TK",
+        "Yachiyo runami",
+        "kikuri",
+        "Aisaka Taiga",
+        "Asa mitaka",
+        "Rice shower",
+        "Kure karura",
+        "Noint",
+        "Miu amano",
+        "Ranma"
+      ],
+      "cooldown": 1782096389592,
+      "cooldownWaifu": 0,
+      "advertencias": 2,
+      "cooldownRobo": 1782096171617
+    },
+    "238873783308465@lid": {
+      "nombre": "꧁༒☬𝓟𝓸𝔀𝓮𝓻☬༒꧂",
+      "esposas": [],
+      "cooldown": 1780111043552,
+      "cooldownWaifu": 0,
+      "advertencias": 0
+    },
+    "266124847485077@lid": {
+      "nombre": "El Chuy",
+      "esposas": [
+        "Hinomori Shizuku",
+        "Yuki sou",
+        "Astolfo",
+        "Chocola",
+        "Tae yamada",
+        "Tokai Teio",
+        "Fine Motion",
+        "Kana arima",
+        "Nefertari vivi",
+        "Himeno",
+        "Mei meido",
+        "Alexis",
+        "Ashura chan"
+      ],
+      "cooldown": 1782095438501,
+      "cooldownWaifu": 1782003659290,
+      "advertencias": 2,
+      "cooldownRobo": 1782096016663
+    },
+    "174719336710264@lid": {
+      "nombre": "♡☆Jona☆♡",
+      "esposas": [
+        "Marin kitagawa"
+      ],
+      "cooldown": 1780882217692,
+      "cooldownWaifu": 1780882182302,
+      "advertencias": 0
+    },
+    "81462879633509@lid": {
+      "nombre": "NightheartTV",
+      "esposas": [],
+      "cooldown": 1779986202424,
+      "cooldownWaifu": 0,
+      "advertencias": 0
+    },
+    "19517002543226@lid": {
+      "nombre": "joey_01",
+      "esposas": [
+        "Tamaki",
+        "Makima"
+      ],
+      "cooldown": 1782096074685,
+      "cooldownWaifu": 1782094953462,
+      "advertencias": 1
+    },
+    "47549834617018@lid": {
+      "nombre": "Po Llo",
+      "esposas": [],
+      "cooldown": 1779986237535,
+      "cooldownWaifu": 0,
+      "advertencias": 0,
+      "cooldownCoco": 1779985774000
+    },
+    "131933140955273@lid": {
+      "nombre": "♱ x",
+      "esposas": [
+        "Daiwa scarlet",
+        "Kaede y Suzu",
+        "Jean",
+        "Anemone"
+      ],
+      "cooldown": 1782096179843,
+      "cooldownWaifu": 0,
+      "advertencias": 0
+    },
+    "108573182955763@lid": {
+      "nombre": "Garchop god 🎗️🎗️",
+      "esposas": [],
+      "cooldown": 1779986546171,
+      "cooldownWaifu": 0,
+      "advertencias": 0
+    },
+    "22974400827395@lid": {
+      "nombre": "xxferq129xx",
+      "esposas": [],
+      "cooldown": 1779986391296,
+      "cooldownWaifu": 0,
+      "advertencias": 0
+    },
+    "156715437818026@lid": {
+      "nombre": "AXEL",
+      "esposas": [],
+      "cooldown": 1781489657396,
+      "cooldownWaifu": 1780265704146,
+      "advertencias": 1
+    },
+    "202259220693071@lid": {
+      "nombre": "𓆉",
+      "esposas": [
+        "Myu"
+      ],
+      "cooldown": 0,
+      "cooldownWaifu": 1780110904336,
+      "advertencias": 0
+    },
+    "54533384311023@lid": {
+      "nombre": "54533384311023",
+      "esposas": [
+        "Ayane shirakawa"
+      ],
+      "cooldown": 0,
+      "cooldownWaifu": 0,
+      "advertencias": 0
+    },
+    "116055066329162@lid": {
+      "nombre": "116055066329162",
+      "esposas": [],
+      "cooldown": 0,
+      "cooldownWaifu": 0,
+      "advertencias": 0
+    },
+    "43345531379819@lid": {
+      "nombre": "𐦍༘𝓗𝓪𝓷𝓷𝓪·˚ ͟͟͞͞꒰",
+      "esposas": [],
+      "cooldown": 1780263774153,
+      "cooldownWaifu": 1780163183760,
+      "advertencias": 1
+    },
+    "223781352136817@lid": {
+      "nombre": "★†¿...? †★",
+      "esposas": [
+        "Frieren"
+      ],
+      "cooldown": 1780163583329,
+      "cooldownWaifu": 0,
+      "advertencias": 0
+    },
+    "132938029080770@lid": {
+      "nombre": "shinji",
+      "esposas": [
+        "Seiko ayase",
+        "toko fukawa",
+        "Dekomori",
+        "Renkawa cherino",
+        "Souna Sitri",
+        "Misato katsuragi",
+        "Solution epsilon",
+        "Kotone shirakawa",
+        "Rin tohsaka"
+      ],
+      "cooldown": 1782096253039,
+      "cooldownWaifu": 1782095654632,
+      "advertencias": 0
+    },
+    "205102119923797@lid": {
+      "nombre": "angel",
+      "esposas": [],
+      "cooldown": 0,
+      "cooldownWaifu": 1780547584284,
+      "advertencias": 0
+    },
+    "226139339501727@lid": {
+      "nombre": "🌙Shadow🌙",
+      "esposas": [
+        "Kusanagi Nene",
+        "Shuvi dola",
+        "Akiyama Mizuki",
+        "akane owari",
+        "Hatsune miku",
+        "Gumi",
+        "Yuki Sorimachi",
+        "Sacarosa"
+      ],
+      "cooldown": 1782004872711,
+      "cooldownWaifu": 0,
+      "advertencias": 0
+    },
+    "13958912159938@lid": {
+      "nombre": "Miguel ⛄",
+      "esposas": [
+        "Jade",
+        "Seri kikyo"
+      ],
+      "cooldown": 1781839420234,
+      "cooldownWaifu": 1781838716565,
+      "advertencias": 1
+    },
+    "256057377038466@lid": {
+      "nombre": "Diego",
+      "esposas": [
+        "Kurumi",
+        "Miku nakano",
+        "Sajuna inui"
+      ],
+      "cooldown": 1782004639453,
+      "cooldownWaifu": 1782004692876,
+      "advertencias": 0
+    },
+    "83409003135174@lid": {
+      "nombre": "M12",
+      "esposas": [],
+      "cooldown": 1780796100765,
+      "cooldownWaifu": 1780795842562,
+      "advertencias": 0
+    },
+    "70000048124042@lid": {
+      "nombre": "★†edgar†★",
+      "esposas": [],
+      "cooldown": 1782095991917,
+      "cooldownWaifu": 0,
+      "advertencias": 0
+    },
+    "6837755768905@lid": {
+      "nombre": "XD",
+      "esposas": [],
+      "cooldown": 1780881797228,
+      "cooldownWaifu": 0,
+      "advertencias": 0
+    },
+    "147103301038209@lid": {
+      "nombre": "Warduolingo",
+      "esposas": [],
+      "cooldown": 1780882064281,
+      "cooldownWaifu": 0,
+      "advertencias": 0
+    },
+    "252466968961202@lid": {
+      "nombre": "alegandro🔥",
+      "esposas": [],
+      "cooldown": 1782095917770,
+      "cooldownWaifu": 0,
+      "advertencias": 2
     }
   },
   "ajustes": {

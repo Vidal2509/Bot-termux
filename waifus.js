@@ -1643,4 +1643,10 @@
 { name: 'Aurora TK', file: 'Aurora TK.jpg', anime: 'Tonikaku Kawaii' },
 { name: 'Charlotte TK', file: 'Charlotte TK.jpg', anime: 'Tonikaku Kawaii' },
 { name: 'Nasa Yuzaki', file: 'Nasa Yuzaki.jpg', anime: 'Tonikaku Kawaii' },
+
+
+{ name: 'Frieren', file: 'Frieren.jpg', anime: 'Soso no Frieren' },
+{ name: 'Himmel', file: 'Himmel.jpg', anime: 'Soso no Frieren' },
+{ name: 'Fern', file: 'Fern.jpg', anime: 'Soso no Frieren' },
+{ name: 'Stark', file: 'Stark.jpg', anime: 'Soso no Frieren' },
     ];
