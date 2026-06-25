@@ -59,6 +59,8 @@
     { name: 'Tomo takino', file: 'tomo takino.jpg', anime: 'Azumanga daioh' },
 
     { name: 'Hatsune miku', file: 'hatsune miku.jpg', anime: 'Ninguno' },
+    { name: 'Akita Neru', file: 'Akita Neru.jpg', anime: 'Ninguno' },
+    { name: 'Gumi', file: 'Gumi.jpg', anime: 'Ninguno' },
 
     { name: 'Tomoko', file: 'tomoko.jpg', anime: 'Watamote' ,suerteLevel: "oro" },
 
@@ -1649,4 +1651,44 @@
 { name: 'Himmel', file: 'Himmel.jpg', anime: 'Soso no Frieren' },
 { name: 'Fern', file: 'Fern.jpg', anime: 'Soso no Frieren' },
 { name: 'Stark', file: 'Stark.jpg', anime: 'Soso no Frieren' },
+
+{ name: 'Kaguya', file: 'Kaguya.jpg', anime: 'Kaguya la princesa del Cosmos' },
+{ name: 'Iroha Sakayori', file: 'Iroha Sakayori.jpg', anime: 'Kaguya la princesa del Cosmos' },
+{ name: 'Yachiyo runami', file: 'yachiyo runami.jpg', anime: 'Kaguya la princesa del Cosmos' },
+{ name: 'Akira Mikado', file: 'Akira Mikado.jpg', anime: 'Kaguya la princesa del Cosmos' },
+{ name: 'Rai Komazawa', file: 'Rai Komazawa.jpg', anime: 'Kaguya la princesa del Cosmos' },
+{ name: 'Noi Komazawa', file: 'Noi Komazawa.jpg', anime: 'Kaguya la princesa del Cosmos' },
+{ name: 'Roka Ayatsumugi', file: 'Roka Ayatsumugi.jpg', anime: 'Kaguya la princesa del Cosmos' },
+{ name: 'Mami Isayama', file: 'Mami Isayama.jpg', anime: 'Kaguya la princesa del Cosmos' },
+
+
+{ name: 'Iruma Suzuki', file: 'Iruma Suzuki.jpg', anime: 'mairimashita iruma-kun' },
+{ name: 'Alice Asmodeus', file: 'Alice Asmodeus.jpg', anime: 'mairimashita iruma-kun' },
+{ name: 'Clara Valac', file: 'Clara Valac.jpg', anime: 'mairimashita iruma-kun' },
+{ name: 'Amelie Azazel', file: 'Amelie Azazel.jpg', anime: 'mairimashita iruma-kun' },
+
+{ name: 'Filia', file: 'Filia.jpg', anime: 'Skullgirls' },
+{ name: 'Cerebella', file: 'Cerebella.jpg', anime: 'Skullgirls' },
+{ name: 'Peacock', file: 'Peacock.jpg', anime: 'Skullgirls' },
+{ name: 'Parasoul', file: 'Parasoul.jpg', anime: 'Skullgirls' },
+{ name: 'Ms Fortune', file: 'Ms Fortune.jpg', anime: 'Skullgirls' },
+{ name: 'Painwheel', file: 'Painwheel.jpg', anime: 'Skullgirls' },
+{ name: 'Valentine', file: 'Valentine.jpg', anime: 'Skullgirls' },
+{ name: 'Double', file: 'Double.jpg', anime: 'Skullgirls' },
+{ name: 'Squigly', file: 'Squigly.jpg', anime: 'Skullgirls' },
+{ name: 'Fukua', file: 'Fukua.jpg', anime: 'Skullgirls' },
+{ name: 'Eliza', file: 'Eliza.jpg', anime: 'Skullgirls' },
+{ name: 'Robo Fortune', file: 'Robo Fortune.jpg', anime: 'Skullgirls' },
+{ name: 'Annie', file: 'Annie.jpg', anime: 'Skullgirls' },
+{ name: 'Umbrella', file: 'Umbrella.jpg', anime: 'Skullgirls' },
+{ name: 'Black Dahlia', file: 'Black Dahlia.jpg', anime: 'Skullgirls' },
+{ name: 'Marie', file: 'Marie.jpg', anime: 'Skullgirls' },
+
+{ name: 'Yuki Sorimachi', file: 'Yuki Sorimachi.jpg', anime: 'Shibo Yugi de Meshi o Kuu' },
+{ name: 'Aoi Shibo', file: 'Aoi Shibo.jpg', anime: 'Shibo Yugi de Meshi o Kuu' },
+{ name: 'Kinko', file: 'Kinko.jpg', anime: 'Shibo Yugi de Meshi o Kuu' },
+{ name: 'Kokuto', file: 'Kokuto.jpg', anime: 'Shibo Yugi de Meshi o Kuu' },
+{ name: 'Beniya', file: 'Beniya.jpg', anime: 'Shibo Yugi de Meshi o Kuu' },
+{ name: 'Momono', file: 'Momono.jpg', anime: 'Shibo Yugi de Meshi o Kuu' },
+
     ];

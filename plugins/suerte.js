@@ -57,7 +57,17 @@ const handler = async (m, { conn, usedPrefix, command }) => {
                 "🔮 Hoy te van a dar como cajon que no cierra.",
                 "🔮 El horóscopo dice: Es probable que te conviertas en admin.",
                 "🔮 Enrique te va a dar unas buenas chupadas de pinga.",
-                "🔮 Un femboy llegara a tu vida."
+                "🔮 Un femboy llegara a tu vida.",
+                "🔮 @[user] te está vigilando desde la ventana del vecino ahora mismo." ,
+                "🔮 @[user] sabe exactamente qué hiciste anoche a las 3:00 AM.",
+                "🔮 @[user] te va a jalar las patas esta noche si no le mandas un DM.",
+                "🔮 @[user] ya compró la pala y las bolsas negras... tú sabrás si aceptas su invitación.",
+                "🔮 @[user] se esconde en tu clóset y respira muy fuerte.",
+                "🔮 @[user] te va a mandar un audio susurrando cosas cochinas esta noche.",
+                "🔮 @[user] compró lencería fina y está esperando a que le preguntes si te gusta.",
+                "🔮 @[user] se va a poner una falda de maid solo para limpiar tu desorden.",
+                "🔮 @[user] está planeando robarte un beso en el próximo stream.",
+                "🔮 @[user] quiere que lo/la domines, pero le da pena decírtelo."
             ];
             frase = frasesComunes[Math.floor(Math.random() * frasesComunes.length)];
         }

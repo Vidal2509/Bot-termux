@@ -142,21 +142,27 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     const imagenBuffer = buscarImagen(carpetaImg, waifuData.file);
 
     if (Math.random() < probabilidad) {
-        datosUser.esposas.push(waifuData.name); 
-        datosUser.cooldown = ahora + (5 * 60 * 1000);
-        global.contadorMatrimonios++; 
-                
-        const caption = `💍 ¡ACEPTÓ! **${waifuData.name}** es ahora tu esposa.`;
-        if (imagenBuffer) await conn.sendMessage(m.chat, { image: imagenBuffer, caption, mentions: [usuarioID] }, { quoted: m });
-        else m.reply(caption);
+    // Forzamos a que se guarde el nombre limpio
+    datosUser.esposas.push(waifuData.name.trim()); 
+    datosUser.cooldown = ahora + (5 * 60 * 1000);
+    global.contadorMatrimonios++; 
+    
+    // Guardamos INMEDIATAMENTE en el JSON para que no se pierda en la RAM
+    fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
+            
+    const caption = `💍 ¡ACEPTÓ! **${waifuData.name}** es ahora tu esposa.`;
+    if (imagenBuffer) await conn.sendMessage(m.chat, { image: imagenBuffer, caption, mentions: [usuarioID] }, { quoted: m });
+    else m.reply(caption);
 
-    } else {
-        datosUser.cooldown = ahora + (3 * 60 * 1000); 
-        fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
-        const captionRechazo = `💔 **${waifuData.name}** te ha rechazado.`;
-        if (imagenBuffer) await conn.sendMessage(m.chat, { image: imagenBuffer, caption: captionRechazo }, { quoted: m });
-        else m.reply(captionRechazo);
-    }
+} else {
+    datosUser.cooldown = ahora + (3 * 60 * 1000); 
+    // Guardamos también el cooldown del rechazo
+    fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
+    
+    const captionRechazo = `💔 **${waifuData.name}** te ha rechazado.`;
+    if (imagenBuffer) await conn.sendMessage(m.chat, { image: imagenBuffer, caption: captionRechazo }, { quoted: m });
+    else m.reply(captionRechazo);
+}
 };
 
 handler.command = /^(matrimonio|casar|waifu|quitarwaifu|evento_on|evento_off)$/i;
