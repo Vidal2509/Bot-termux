@@ -1692,4 +1692,11 @@
 { name: 'Beniya', file: 'Beniya.jpg', anime: 'Shibo Yugi de Meshi o Kuu' },
 { name: 'Momono', file: 'Momono.jpg', anime: 'Shibo Yugi de Meshi o Kuu' },
 
+{ name: 'Amane Fujimiya', file: 'Amane Fujimiya.jpg', anime: 'Otonari no Tenshi-sama ni Itsu no Ma ni ka Dame Ningen ni Sareteita Ken' },
+{ name: 'Mahiru Shiina', file: 'Mahiru Shiina.jpg', anime: 'Otonari no Tenshi-sama ni Itsu no Ma ni ka Dame Ningen ni Sareteita Ken' },
+{ name: 'Itsuki Akazawa', file: 'Itsuki Akazawa.jpg', anime: 'Otonari no Tenshi-sama ni Itsu no Ma ni ka Dame Ningen ni Sareteita Ken' },
+{ name: 'Chitose Shirakawa', file: 'Chitose Shirakawa.jpg', anime: 'Otonari no Tenshi-sama ni Itsu no Ma ni ka Dame Ningen ni Sareteita Ken' },
+{ name: 'Ayaka Kido', file: 'Ayaka Kido.jpg', anime: 'Otonari no Tenshi-sama ni Itsu no Ma ni ka Dame Ningen ni Sareteita Ken' },
+{ name: 'Sayo Shiina', file: 'Sayo Shiina.jpg', anime: 'Otonari no Tenshi-sama ni Itsu no Ma ni ka Dame Ningen ni Sareteita Ken' },
+
     ];

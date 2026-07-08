@@ -5,10 +5,10 @@ const handler = async (m, { conn }) => {
     const pathMatrimonios = join(process.cwd(), 'database', 'matrimonios.json');
     if (!fs.existsSync(pathMatrimonios)) return m.reply('❌ No existe la base de datos.');
 
-    // FUNCIÓN DE SEGURIDAD PARA EVITAR EL ERROR DE SPLIT
-    const safeSplit = (str) => {
-        if (!str || typeof str !== 'string') return '';
-        return str.split('@')[0];
+    // Extrae solo los números antes del @ o cualquier carácter especial
+    const obtenerSoloNumero = (jid) => {
+        if (!jid || typeof jid !== 'string') return '';
+        return jid.split('@')[0].replace(/[^0-9]/g, ''); // Deja solo los dígitos numéricos
     };
 
     try {
@@ -16,24 +16,28 @@ const handler = async (m, { conn }) => {
         const ahora = Date.now();
         const tiempoCooldown = 5 * 60 * 1000; 
 
-        // 1. Identificar al emisor con seguridad
+        // 1. Identificar al emisor
         const sender = m.sender || m.key?.participant || '';
-        const bareSender = safeSplit(sender);
+        const numeroSender = obtenerSoloNumero(sender);
         
-        if (!bareSender) return; // Evita crasheos si el sender es nulo
+        if (!numeroSender) return; 
 
-        let idEmisor = Object.keys(data.usuarios).find(key => safeSplit(key) === bareSender);
-        if (!idEmisor) return m.reply('❌ No estás registrado en el sistema.');
+        // Buscar la clave exacta en el JSON que coincida con el número del emisor
+        let idEmisor = Object.keys(data.usuarios).find(key => obtenerSoloNumero(key) === numeroSender);
+        
+
+        if (!idEmisor) return m.reply('❌ No estás registrado en el sistema de matrimonios.');
 
         // 2. Detectar objetivo
         let who = m.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0] || (m.quoted ? m.quoted.sender : null);
         if (!who) return m.reply(`🥥 *Etiqueta a alguien!*`);
 
-        const bareVictima = safeSplit(who);
-        let idRealVictima = Object.keys(data.usuarios).find(key => safeSplit(key) === bareVictima);
-        if (!idRealVictima) return m.reply('❌ Esa persona no está registrada.');
+        const numeroVictima = obtenerSoloNumero(who);
+        let idRealVictima = Object.keys(data.usuarios).find(key => obtenerSoloNumero(key) === numeroVictima);
+        
+        if (!idRealVictima) return m.reply('❌ Esa persona no está registrada en el sistema de matrimonios.');
 
-        // 4. Validación de Cooldown
+        // 4. Validación de Cooldown usando la ID exacta del JSON
         if (data.usuarios[idEmisor].cooldownCoco) {
             const tiempoPasado = ahora - data.usuarios[idEmisor].cooldownCoco;
             if (tiempoPasado < tiempoCooldown) {
@@ -51,13 +55,13 @@ const handler = async (m, { conn }) => {
 
         // ===== LÓGICA DE EVENTOS =====
         if (azar <= 5) {
-            const quitadas = quitarWaifus(data, victima, 10, safeSplit);
-            mensaje = `🥇 ¡COCO DORADO! @${safeSplit(victima)} recibió un impacto crítico.`;
+            const quitadas = quitarWaifus(data, idRealVictima, 10);
+            mensaje = `🥇 ¡COCO DORADO! @${numeroVictima} recibió un impacto crítico.`;
             infoWaifus = quitadas.length > 0 ? `\n💔 *Perdió 10 waifus:* ${quitadas.join(', ')}` : `\n🤕 No tenía waifus.`;
         }
         else if (azar <= 12) {
-            const quitadas = quitarWaifus(data, victima, 9999, safeSplit);
-            mensaje = `💣 ¡COCO BOMBA! @${safeSplit(victima)} perdió todo.`;
+            const quitadas = quitarWaifus(data, idRealVictima, 9999);
+            mensaje = `💣 ¡COCO BOMBA! @${numeroVictima} perdió todo.`;
             infoWaifus = quitadas.length > 0 ? `\n💀 *Perdió TODAS:* ${quitadas.join(', ')}` : `\n💨 Sin waifus que perder.`;
         }
         else if (azar <= 22) {
@@ -70,31 +74,36 @@ const handler = async (m, { conn }) => {
         }
         else if (azar <= 60) {
             victima = m.sender;
-            const quitadas = quitarWaifus(data, victima, 3, safeSplit);
-            mensaje = `🔙 ¡Rebotó! Te diste a ti mismo @${safeSplit(victima)}`;
+            // Si rebota, la víctima pasa a ser el propio emisor
+            const quitadas = quitarWaifus(data, idEmisor, 3);
+            mensaje = `🔙 ¡Rebotó! Te diste a ti mismo @${numeroSender}`;
             infoWaifus = quitadas.length > 0 ? `\n💔 *Perdiste 3:* ${quitadas.join(', ')}` : `\n🤕 Sin waifus.`;
         }
         else {
-            const quitadas = quitarWaifus(data, victima, 3, safeSplit);
-            mensaje = `🎯 ¡Directo en la cabeza de @${safeSplit(victima)}!`;
+            const quitadas = quitarWaifus(data, idRealVictima, 3);
+            mensaje = `🎯 ¡Directo en la cabeza de @${numeroVictima}!`;
             infoWaifus = quitadas.length > 0 ? `\n💔 *Perdió 3:* ${quitadas.join(', ')}` : `\n🤕 Sin waifus.`;
         }
 
         fs.writeFileSync(pathMatrimonios, JSON.stringify(data, null, 2));
-        await conn.sendMessage(m.chat, { text: mensaje + infoWaifus, mentions: [victima] }, { quoted: m });
+        
+        const mencionesValidas = (victima && typeof victima === 'string') ? [victima] : [];
+
+        await conn.sendMessage(m.chat, { 
+            text: mensaje + infoWaifus, 
+            mentions: mencionesValidas 
+        }, { quoted: m });
 
     } catch (e) {
         console.error("Error en coco.js:", e);
     }
 };
 
-function quitarWaifus(data, victima, cantidad, safeSplit) {
-    if (!victima) return [];
-    const bareVictima = safeSplit(victima);
-    let idRealVictima = Object.keys(data.usuarios).find(key => safeSplit(key) === bareVictima);
+// Modificada para recibir directamente la ID real encontrada del JSON
+function quitarWaifus(data, idRealVictima, cantidad) {
     let nombresQuitados = [];
 
-    if (idRealVictima && data.usuarios[idRealVictima].esposas?.length > 0) {
+    if (idRealVictima && data.usuarios[idRealVictima]?.esposas?.length > 0) {
         for (let i = 0; i < cantidad; i++) {
             if (data.usuarios[idRealVictima].esposas.length > 0) {
                 let index = Math.floor(Math.random() * data.usuarios[idRealVictima].esposas.length);
