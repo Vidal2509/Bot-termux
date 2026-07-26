@@ -61,6 +61,7 @@
     { name: 'Hatsune miku', file: 'hatsune miku.jpg', anime: 'Ninguno' },
     { name: 'Akita Neru', file: 'Akita Neru.jpg', anime: 'Ninguno' },
     { name: 'Gumi', file: 'Gumi.jpg', anime: 'Ninguno' },
+    { name: 'Rei Adachi', file: 'Rei Adachi.jpg', anime: 'Ninguno' },
 
     { name: 'Tomoko', file: 'tomoko.jpg', anime: 'Watamote' ,suerteLevel: "oro" },
 
@@ -627,6 +628,8 @@
     { name: 'Iku sutou', file: 'iku sutou.jpg', anime: 'Kimi no koto ga dai dai dai dai daisuki na 100-nin no kanojo' },
     { name: 'Mimimi Utsukushisugi', file: 'Mimimi Utsukushisugi.jpg', anime: 'Kimi no koto ga dai dai dai dai daisuki na 100-nin no kanojo' },
     { name: 'Meme kakure', file: 'meme kakure.jpg', anime: 'Kimi no koto ga dai dai dai dai daisuki na 100-nin no kanojo',suerteLevel: "oro" },
+    { name: 'Lin Chiyo', file: 'Lin Chiyo.jpg', anime: 'Kimi no koto ga dai dai dai dai daisuki na 100-nin no kanojo'},
+    { name: 'Lin Chiyo', file: 'Lin Chiyo.jpg', anime: 'Kimi no koto ga dai dai dai dai daisuki na 100-nin no kanojo'},
 
     { name: 'Marin kitagawa', file: 'marin kitagawa.jpg', anime: 'Sono bisque doll wa koi wo suru' ,suerteLevel: "oro" },
     { name: 'Nowa sugaya', file: 'nowa sugaya.jpg', anime: 'Sono bisque doll wa koi wo suru' },
@@ -1699,4 +1702,12 @@
 { name: 'Ayaka Kido', file: 'Ayaka Kido.jpg', anime: 'Otonari no Tenshi-sama ni Itsu no Ma ni ka Dame Ningen ni Sareteita Ken' },
 { name: 'Sayo Shiina', file: 'Sayo Shiina.jpg', anime: 'Otonari no Tenshi-sama ni Itsu no Ma ni ka Dame Ningen ni Sareteita Ken' },
 
+
+{ name: 'Noko Shikanoko', file: 'Noko Shikanoko.jpg', anime: 'Shikanoko Nokonoko Koshitantan' },
+{ name: 'Torako koshi', file: 'Torako koshi.jpg', anime: 'Shikanoko Nokonoko Koshitantan' },
+{ name: 'Anko koshi', file: 'Anko koshi.jpg', anime: 'Shikanoko Nokonoko Koshitantan' },
+{ name: 'Meme Bashame', file: 'Meme Bashame.jpg', anime: 'Shikanoko Nokonoko Koshitantan' },
+{ name: 'Neko Nekoyamada', file: 'Neko Nekoyamada.jpg', anime: 'Shikanoko Nokonoko Koshitantan' },
+{ name: 'Chiharu Tsubameya', file: 'Chiharu Tsubameya.jpg', anime: 'Shikanoko Nokonoko Koshitantan' },
+{ name: 'Kinu Tanukikoji', file: 'Kinu Tanukikoji.jpg', anime: 'Shikanoko Nokonoko Koshitantan' },
     ];
