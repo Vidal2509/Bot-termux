@@ -1710,4 +1710,11 @@
 { name: 'Neko Nekoyamada', file: 'Neko Nekoyamada.jpg', anime: 'Shikanoko Nokonoko Koshitantan' },
 { name: 'Chiharu Tsubameya', file: 'Chiharu Tsubameya.jpg', anime: 'Shikanoko Nokonoko Koshitantan' },
 { name: 'Kinu Tanukikoji', file: 'Kinu Tanukikoji.jpg', anime: 'Shikanoko Nokonoko Koshitantan' },
+
+{ name: 'Yuu Ayase', file: 'Yuu Ayase.jpg', anime: 'Mikadono Sanshimai wa Angai, Choroi' },
+{ name: 'Miwa Mikadono', file: 'Miwa Mikadono.jpg', anime: 'Mikadono Sanshimai wa Angai, Choroi' },
+{ name: 'Niko Mikadono', file: 'Niko Mikadono.jpg', anime: 'Mikadono Sanshimai wa Angai, Choroi' },
+{ name: 'Kazuki Mikadono', file: 'Kazuki Mikadono.jpg', anime: 'Mikadono Sanshimai wa Angai, Choroi' },
+{ name: 'Sakura Yaotome', file: 'Sakura Yaotome.jpg', anime: 'Mikadono Sanshimai wa Angai, Choroi' },
+{ name: 'Subaru Ayase', file: 'Subaru Ayase.jpg', anime: 'Mikadono Sanshimai wa Angai, Choroi' },
     ];
