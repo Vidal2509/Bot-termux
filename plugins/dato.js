@@ -57,6 +57,7 @@ const handler = async (m, { conn }) => {
             "💀 @[user] jura que no stalkea, pero sabe todo lo que hace @[user2].",
             "😈 @[user] se viste de leñadora en bikini cuando nadie lo ve.",
             "🧠 a @[user] lo corrieron del rancho de su abuelo por culiarse a un caballo.",
+            "🧠 a @[user] le gusta el pilin.",
             "🕵️ El FBI debería arrestar a @[user], por lo que tiene en su galeria.",
             "😈 @[user] jura que es buena persona… pero su historial dice otra cosa.",
             "🔥 @[user] le dio la cola a  @[user2].",

@@ -1,29 +1,45 @@
 const handler = async (m, { conn, args }) => {
+    // Categoría por defecto 'waifu', o la que escriba el usuario (ej: neko, husbando, kitsune)
+    let categoria = args[0] ? args[0].toLowerCase() : 'waifu';
+    
+    const url = `https://nekos.best/api/v2/${categoria}`;
 
-    if (!args.length)
-        return m.reply("Uso: .pin megumin");
+    try {
+        const res = await fetch(url);
 
-    const tag = args.join("_");
+        // Si la categoría no existe o falla, usamos 'waifu' por defecto como respaldo
+        if (!res.ok) {
+            const resDefault = await fetch('https://nekos.best/api/v2/waifu');
+            const dataDefault = await resDefault.json();
+            const item = dataDefault.results[0];
 
-    const url = `https://danbooru.donmai.us/posts.json?tags=${tag}+rating:safe&limit=20`;
+            return await conn.sendMessage(m.chat, {
+                image: { url: item.url },
+                caption: `✨ Categoría no encontrada. Aquí tienes una waifu al azar.\n🔗 Fuente: ${item.source_url || 'Nekos.best'}`
+            }, { quoted: m });
+        }
 
-    const res = await fetch(url);
-    const data = await res.json();
+        const data = await res.json();
 
-    if (!data.length)
-        return m.reply("No encontré imágenes.");
+        if (!data.results || data.results.length === 0) {
+            return m.reply("❌ No se encontró ninguna imagen con esa categoría.");
+        }
 
-    const post = data[Math.floor(Math.random() * data.length)];
+        const item = data.results[0];
+        const imagenUrl = item.url;
+        const sourceUrl = item.source_url || 'Nekos.best';
 
-    const image = post.file_url;
+        await conn.sendMessage(m.chat, {
+            image: { url: imagenUrl },
+            caption: `✨ **Pinterest / Nekos.best**\n🔍 Categoría: *${categoria}*\n🔗 Fuente: ${sourceUrl}`
+        }, { quoted: m });
 
-    await conn.sendMessage(m.chat, {
-        image: { url: image },
-        caption: `✨ ${args.join(" ")}`
-    }, { quoted: m });
-
+    } catch (error) {
+        console.error("Error en pinterest.js con nekos.best:", error);
+        return m.reply("❌ Hubo un error al conectar con el servidor de imágenes.");
+    }
 };
 
-handler.command = /^pin$/i;
+handler.command = /^(pinterest|pin)$/i;
 
 export default handler;

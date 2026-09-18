@@ -1717,4 +1717,18 @@
 { name: 'Kazuki Mikadono', file: 'Kazuki Mikadono.jpg', anime: 'Mikadono Sanshimai wa Angai, Choroi' },
 { name: 'Sakura Yaotome', file: 'Sakura Yaotome.jpg', anime: 'Mikadono Sanshimai wa Angai, Choroi' },
 { name: 'Subaru Ayase', file: 'Subaru Ayase.jpg', anime: 'Mikadono Sanshimai wa Angai, Choroi' },
+
+{ name: 'Joy Park', file: 'Joy Park.jpg', anime: 'I love Amy' },
+{ name: 'Nicholas Reden', file: 'Nicholas Reden.jpg', anime: 'I love Amy' },
+{ name: 'Julia Lee', file: 'Julia Lee.jpg', anime: 'I love Amy' },
+{ name: 'Sophia Connor', file: 'Sophia Connor.jpg', anime: 'I love Amy' },
+{ name: 'Bibi Reden', file: 'Bibi Reden.jpg', anime: 'I love Amy' },
+{ name: 'Amy Lee', file: 'Amy Lee.jpg', anime: 'I love Amy' },
+{ name: 'Camilla Connor', file: 'Camilla Connor.jpg', anime: 'I love Amy' },
+
+{ name: 'Nagate Tanikaze', file: 'Nagate Tanikaze.jpg', anime: 'Sidonia no Kishi' },
+{ name: 'Shizuka Hoshijiro', file: 'Shizuka Hoshijiro.jpg', anime: 'Sidonia no Kishi' },
+{ name: 'Izana Shinatose', file: 'Izana Shinatose.jpg', anime: 'Sidonia no Kishi' },
+{ name: 'Capitana Kobayashi', file: 'Capitana Kobayashi.jpg', anime: 'Sidonia no Kishi' },
+{ name: 'Yuhata Midorikawa', file: 'Yuhata Midorikawa.jpg', anime: 'Sidonia no Kishi' },
     ];

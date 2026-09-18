@@ -112,19 +112,6 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     const carpeta = esEspecial ? 'waifus especiales' : 'waifus';
     const imagenBuffer = buscarImagenReal(carpeta, waifuData.file);
 
-    // --- 5. COMANDO BUSCAR ---
-    if (command === 'buscar') {
-        let dueñoID = Object.keys(db.usuarios).find(id => 
-            db.usuarios[id].esposas.some(e => e.toLowerCase() === waifuData.name.toLowerCase())
-        );
-        const txtBase = dueñoID 
-            ? (dueñoID === usuarioID ? `💍 **${waifuData.name}** es tu esposa.` : `🕵️ **${waifuData.name}** es esposa de **${db.usuarios[dueñoID].nombre}** (@${dueñoID.split('@')[0]}).`)
-            : `✅ **${waifuData.name}** está soltera.`;
-
-        if (imagenBuffer) return conn.sendMessage(m.chat, { image: imagenBuffer, caption: txtBase, mentions: dueñoID ? [dueñoID] : [] }, { quoted: m });
-        return m.reply(txtBase, null, { mentions: dueñoID ? [dueñoID] : [] });
-    }
-
     // --- 6. COMANDO ROBAR (SISTEMA ABIERTO) ---
     if (command === 'robar') {
         if (datosUser.esposas.length < 1) return m.reply(`🚫 Necesitas al menos una esposa para robar.`);

@@ -1,5 +1,5 @@
    export default [
-    { name: 'Rem demonio', file: 'rem demonio.jpg', anime: 'Re zero' },
+    { name: 'Rem demonio', file: 'rem demonio.jpg', anime: 'Re:zero' },
     { name: 'Ainz ooal gown', file: 'ainz ooal gown.jpg', anime: 'Overlord' },
     { name: 'Goblin slayer', file: 'goblin slayer.jpg', anime: 'Goblin slayer' },
     { name: 'Saitama', file: 'saitama.jpg', anime: 'One punch man' },
@@ -15,8 +15,8 @@
     { name: 'Shinobu', file: 'shinobu.jpg', anime: 'Princess connect' },
     { name: 'Pecorine', file: 'pecorine.jpg', anime: 'Princess connect' },
     { name: 'Luna', file: 'luna.jpg', anime: 'Princess connect' },
-    { name: 'Reinhard Van Astrea', file: 'reinhard van astrea.jpg', anime: 'Re zero' },
-    { name: 'Flugel El Gran Sabio', file: 'flugel el gran sabio.jpg', anime: 'Re zero' },
+    { name: 'Reinhard Van Astrea', file: 'reinhard van astrea.jpg', anime: 'Re:zero' },
+    { name: 'Flugel El Gran Sabio', file: 'flugel el gran sabio.jpg', anime: 'Re:zero' },
     { name: 'Nova', file: 'nova.jpg', anime: 'Metal slug attack' },
     { name: 'Ai hoshino', file: 'ai hoshino.jpg', anime: 'Oshi no ko' },
     { name: 'Aisaka Taiga', file: 'aisaka taiga.jpg', anime: 'Toradora' },

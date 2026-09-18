@@ -1,101 +1,115 @@
 import fs from 'fs';
-import { join } from 'path';
+import path from 'path';
 
-// Listas de razones para el SÍ y para el NO
-const razonesSi = [
-    "porque ha estado muy activo en el grupo. ✨",
-    "porque me cae súper bien y tiene buen gusto. 😎",
-    "porque hoy anda con toda la facha. 👑",
-    "porque se bañó (por fin). 🧼",
-    "porque sus memes siempre reviven el grupo. 🔥",
-    "porque es una lindura de persona. 💖"
-];
+const dataPath = './database/matrimonios.json';
 
-const razonesNo = [
-    "porque es tremendamente feo/a. 💀",
-    "... bueno, en realidad no se la merece por fantasma. 👻",
-    "porque no ha mandado ni un solo sticker hoy. 😡",
-    "porque huele a obo. 🤢",
-    "porque es un otaku mugroso que no se baña. 🧼❌",
-    "porque la bola de cristal dice que es un traidor. 🔮🚫"
-];
+const cargarLista = (nombreArchivo) => {
+    const ruta = path.join(process.cwd(), nombreArchivo);
+    if (!fs.existsSync(ruta)) return [];
+    try {
+        let contenido = fs.readFileSync(ruta, 'utf-8');
+        contenido = contenido.replace(/export\s+default|module\.exports\s*=\s*/g, '').trim();
+        if (contenido.endsWith(';')) contenido = contenido.slice(0, -1);
+        return new Function(`return ${contenido}`)();
+    } catch (e) { return []; }
+};
 
-const handler = async (m, { conn, text }) => {
+const buscarImagenReal = (carpeta, nombreArchivo) => {
+    const rutaCarpeta = path.join(process.cwd(), carpeta);
+    if (!fs.existsSync(rutaCarpeta)) return null;
+    const archivos = fs.readdirSync(rutaCarpeta);
+    const coincidencia = archivos.find(f => f.toLowerCase() === nombreArchivo.toLowerCase());
+    return coincidencia ? fs.readFileSync(path.join(rutaCarpeta, coincidencia)) : null;
+};
+
+// Función de retraso (pausa) de 2 segundos
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+const handler = async (m, { conn }) => {
     const esGrupo = m.chat.endsWith('@g.us');
     if (!esGrupo) return m.reply('*⚠️ Este comando solo es para grupos.*');
 
-    // 1. Detectar el ID de WhatsApp de la persona (jid)
-    let who = null;
-    if (m.message?.extendedTextMessage?.contextInfo?.mentionedJid) {
-        who = m.message.extendedTextMessage.contextInfo.mentionedJid[0];
-    } else if (m.message?.extendedTextMessage?.contextInfo?.participant) {
-        who = m.message.extendedTextMessage.contextInfo.participant;
-    } else if (m.quoted) {
-        who = m.quoted.sender;
+    // 🔒 RESTRICCIÓN DE OWNER
+    const senderID = m.participant || m.key.participant || m.sender || m.remoteJid;
+    const numeroLimpio = senderID.split('@')[0];
+
+    // Tu ID autorizado
+    const miIDAutorizado = '280139359338689';
+
+    if (numeroLimpio !== miIDAutorizado) {
+        return m.reply('❌ Este comando solo puede ser ejecutado por el creador del bot.');
     }
 
-    if (!who) return m.reply('*⚠️ ¿A quién quieres bendecir? Etiqueta a alguien. Ejemplo: .bendicion @usuario*');
+    if (!fs.existsSync(dataPath)) return m.reply('📑 No hay registros de matrimonios.');
+    let db = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
 
-    try {
-        let nombreMostrar = null;
-        const bareID = who.split('@')[0]; // Número limpio sin @lid ni @s.whatsapp.net
+    const usuariosIDs = Object.keys(db.usuarios || {});
+    if (usuariosIDs.length < 5) {
+        return m.reply(`⚠️ Se necesitan al menos 5 usuarios registrados en la base de datos para hacer la bendición (hay ${usuariosIDs.length}).`);
+    }
 
-        // 2. Cargar tu archivo matrimonios.json
-        const pathMatrimonios = join(process.cwd(), 'database', 'matrimonios.json');
-        
-        if (fs.existsSync(pathMatrimonios)) {
-            let data = JSON.parse(fs.readFileSync(pathMatrimonios, 'utf-8'));
+    // 🎲 Seleccionamos 5 personas al azar del registro
+    const seleccionados = usuariosIDs.sort(() => 0.5 - Math.random()).slice(0, 5);
 
-            if (data && data.usuarios) {
-                // AQUÍ ESTÁ EL TRUCO: Comparamos solo los números puros de las llaves del JSON
-                let idReal = Object.keys(data.usuarios).find(key => key.split('@')[0] === bareID);
+    // Cargamos todas las waifus disponibles
+    const waifusNormales = cargarLista('waifus.js');
+    const waifusEspeciales = cargarLista('waifus_especiales.js');
+    const todasWaifus = [...waifusNormales, ...waifusEspeciales];
 
-                if (idReal && data.usuarios[idReal]?.nombre) {
-                    nombreMostrar = data.usuarios[idReal].nombre;
-                }
-            }
+    // Obtenemos una lista con los nombres de todas las waifus que YA tienen dueño en el harem de alguien
+    const waifusOcupadas = new Set();
+    Object.values(db.usuarios).forEach(u => {
+        if (u.esposas && Array.isArray(u.esposas)) {
+            u.esposas.forEach(e => waifusOcupadas.add(e.toLowerCase()));
         }
+    });
 
-        // 3. Plan de respaldo si no está registrado todavía en tu JSON
-        if (!nombreMostrar) {
-            if (m.quoted && m.quoted.pushName) {
-                nombreMostrar = m.quoted.pushName;
-            } else {
-                try {
-                    const groupMetadata = await conn.groupMetadata(m.chat);
-                    const participant = groupMetadata.participants.find(p => p.id.split('@')[0] === bareID);
-                    nombreMostrar = participant?.notify || participant?.name || bareID;
-                } catch {
-                    nombreMostrar = bareID;
-                }
-            }
-        }
+    // Filtramos solo las waifus que están totalmente solteras
+    let waifusLibres = todasWaifus.filter(w => !waifusOcupadas.has(w.name.toLowerCase()));
 
-        // Determinar 50/50 si es SÍ o NO
-        const esBendecido = Math.random() < 0.5;
-        let respuesta = '';
-        
-        // Formateamos el tag con el nombre real de tu base de datos
-        const usuarioTag = `*${nombreMostrar}*`;
+    if (waifusLibres.length < 5) {
+        return m.reply('⚠️ No hay suficientes waifus libres en el sistema para repartir 5 bendiciones.');
+    }
 
-        if (esBendecido) {
-            const razon = razonesSi[Math.floor(Math.random() * razonesSi.length)];
-            respuesta = `😇 *¡LA BENDICIÓN SE HA CONCEDIDO!* 😇\n\n🔮 ${usuarioTag} *SÍ* recibe la bendición hoy, ${razon}`;
+    await m.reply('😇 *¡El divino ha comenzado a repartir bendiciones celestiales! Preparando altares...*');
+
+    for (let i = 0; i < seleccionados.length; i++) {
+        const userID = seleccionados[i];
+        const usuarioData = db.usuarios[userID];
+        const nombreUsuario = usuarioData.nombre || 'Afortunado/a';
+
+        // Elegimos una waifu libre al azar y la sacamos del array para que no se repita en la misma tanda
+        const indexWaifu = Math.floor(Math.random() * waifusLibres.length);
+        const waifuAsignada = waifusLibres.splice(indexWaifu, 1)[0];
+
+        // Se la añadimos formalmente al usuario en la base de datos
+        if (!usuarioData.esposas) usuarioData.esposas = [];
+        usuarioData.esposas.push(waifuAsignada.name);
+
+        // Buscamos su imagen real en las carpetas locales
+        const esEspecial = waifusEspeciales.some(w => w.name === waifuAsignada.name);
+        const carpeta = esEspecial ? 'waifus especiales' : 'waifus';
+        const imagenBuffer = buscarImagenReal(carpeta, waifuAsignada.file);
+
+        // Corrección aplicada en ${nombreUsuario}
+        const caption = `✨ *¡BENDICIÓN DIVINA #${i + 1}!* ✨\n\n👤 Para: *${nombreUsuario}* (@${userID.split('@')[0]})\n💍 Ha recibido a: **${waifuAsignada.name}**\n🎥 Anime: *${waifuAsignada.anime}*\n\n_¡Una nueva esposa se une a su harem!_`;
+
+        if (imagenBuffer) {
+            await conn.sendMessage(m.chat, { image: imagenBuffer, caption: caption, mentions: [userID] }, { quoted: m });
         } else {
-            const razon = razonesNo[Math.floor(Math.random() * razonesNo.length)];
-            respuesta = `💥 *¡LA BENDICIÓN HA SIDO DENEGADA!* 💥\n\n🔮 ${usuarioTag} *NO* recibe la bendición, ${razon}`;
+            await conn.sendMessage(m.chat, { text: caption, mentions: [userID] }, { quoted: m });
         }
 
-        respuesta += `\n\n_💡 (La palabra del bot es ley)_`;
-
-        // Se envía la mención oculta para que le llegue la notificación, pero en el texto se lee limpio el nombre
-        await conn.sendMessage(m.chat, { text: respuesta, mentions: [who] }, { quoted: m });
-
-    } catch (e) {
-        console.error(e);
-        m.reply("*❌ Error al procesar la bendición.*");
+        // ⏱️ Esperamos 2 segundos exactos antes de mandar la siguiente (siempre y cuando no sea la última)
+        if (i < seleccionados.length - 1) {
+            await sleep(2000);
+        }
     }
+
+    // Guardamos los cambios en el JSON de matrimonios
+    fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
+    await m.reply('🌟 *¡La tanda de bendiciones ha finalizado con éxito!*');
 };
 
-handler.command = /^(bendicion|bendecir)$/i;
+handler.command = /^bendicion$/i;
 export default handler;
